@@ -55,6 +55,9 @@ class AuthServiceImpl(AuthService):
             "profile": user.avatar or "",
         }
 
+    def logout(self, request) -> bool:
+        return True
+
     def _validate_register_data(self, dto: RegisterDTO) -> None:
         if not dto.name or not dto.name.strip():
             raise ValidationException("Name is required")

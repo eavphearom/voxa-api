@@ -1,8 +1,9 @@
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from app.Authentication.JWTAuthentication import AppJWTAuthentication
 from app.DTO.LoginDTO import LoginDTO
 from app.DTO.RegisterDTO import RegisterDTO
 from app.Exceptions import ValidationException
@@ -11,12 +12,20 @@ from app.Services.Contracts.AuthService import AuthService
 
 
 class AuthController(APIView):
+    authentication_classes = [AppJWTAuthentication]
     permission_classes = [AllowAny]
     action = "register"
+
+    def get_permissions(self):
+        if self.action == "logout":
+            return [IsAuthenticated()]
+        return [AllowAny()]
 
     def post(self, request):
         if self.action == "login":
             return self.login(request)
+        if self.action == "logout":
+            return self.logout(request)
         return self.register(request)
 
     def register(self, request):
@@ -68,6 +77,20 @@ class AuthController(APIView):
                 "error": False,
                 "success": True,
                 "message": "Login successfully",
+                "data": data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def logout(self, request):
+        service = container.resolve(AuthService)
+        data = service.logout(request)
+
+        return Response(
+            {
+                "error": False,
+                "status": "success",
+                "message": "Logout successful.",
                 "data": data,
             },
             status=status.HTTP_200_OK,

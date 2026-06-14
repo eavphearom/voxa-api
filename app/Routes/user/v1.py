@@ -6,4 +6,5 @@ from app.Controllers.AuthController import AuthController
 urlpatterns = [
     path("auth/register", AuthController.as_view(), name="auth-register"),
     path("auth/login", AuthController.as_view(action="login"), name="auth-login"),
+    path("auth/logout", AuthController.as_view(action="logout"), name="auth-logout"),
 ]

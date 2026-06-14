@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
@@ -8,8 +9,29 @@ from app.Exceptions.validation_exception import ValidationException
 
 
 def api_exception_handler(exc, context):
+    if isinstance(exc, (AuthenticationFailed, NotAuthenticated)):
+        return Response(
+            {
+                "error": True,
+                "status": "Unauthorized",
+                "errors": [],
+                "message": "Token is invalid",
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
     response = exception_handler(exc, context)
     if response is not None:
+        if response.status_code == status.HTTP_401_UNAUTHORIZED:
+            return Response(
+                {
+                    "error": True,
+                    "status": "Unauthorized",
+                    "errors": [],
+                    "message": "Token is invalid",
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         return response
 
     if isinstance(exc, NotFoundException):

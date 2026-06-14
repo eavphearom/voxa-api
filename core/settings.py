@@ -127,6 +127,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOWED_ORIGINS = get_list_env("DJANGO_CORS_ALLOWED_ORIGINS", [])
+CORS_ALLOW_ALL_ORIGINS = True
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
@@ -135,7 +136,7 @@ WHISPER_API_KEY = os.getenv("WHISPER_API_KEY", "")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "app.Authentication.JWTAuthentication.AppJWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [

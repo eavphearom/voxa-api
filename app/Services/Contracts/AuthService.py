@@ -13,3 +13,7 @@ class AuthService(ABC):
     @abstractmethod
     def login(self, dto: LoginDTO) -> dict[str, Any]:
         raise NotImplementedError
+
+    @abstractmethod
+    def logout(self, request) -> bool:
+        raise NotImplementedError
