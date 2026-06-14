@@ -3,5 +3,5 @@ from app.Repositories.UserRepositoryImpl import UserRepositoryImpl
 
 
 REPOSITORY_BINDINGS = {
-    UserRepository: UserRepositoryImpl,
+    UserRepository: lambda container: UserRepositoryImpl(),
 }

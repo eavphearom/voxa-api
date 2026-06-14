@@ -76,7 +76,7 @@ class Command(BaseCommand):
             f"from app.Repositories.Contracts.{class_name}Repository import {class_name}Repository",
             f"from app.Repositories.{class_name}RepositoryImpl import {class_name}RepositoryImpl",
         ]
-        binding = f"    {class_name}Repository: {class_name}RepositoryImpl,"
+        binding = f"    {class_name}Repository: lambda container: {class_name}RepositoryImpl(),"
         path.write_text(
             self._append_imports_and_dict_binding(content, "REPOSITORY_BINDINGS", imports, binding),
             encoding="utf-8",
@@ -298,7 +298,7 @@ class {class_name}(models.Model):
 
     def _repository_contract_template(self, context: dict[str, str]) -> str:
         class_name = context["class_name"]
-        return f'''from app.Repositories.BaseRepository import BaseRepository
+        return f'''from app.Repositories.Contracts.BaseRepository import BaseRepository
 
 
 class {class_name}Repository(BaseRepository):
