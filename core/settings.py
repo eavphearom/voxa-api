@@ -4,6 +4,11 @@ from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 from app.Helpers.env import get_bool_env, get_list_env, load_env_file
 
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=30),
+}
 try:
     from dotenv import load_dotenv
 except ImportError:
@@ -130,6 +135,8 @@ CORS_ALLOWED_ORIGINS = get_list_env("DJANGO_CORS_ALLOWED_ORIGINS", [])
 CORS_ALLOW_ALL_ORIGINS = True
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_FALLBACK_MODELS = get_list_env("GEMINI_FALLBACK_MODELS", [])
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
 WHISPER_API_KEY = os.getenv("WHISPER_API_KEY", "")

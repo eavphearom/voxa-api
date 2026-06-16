@@ -22,18 +22,3 @@ class ChatSessionResponseDTO(BaseDTO):
     meeting_id: int
     user_id: int
     title: str
-
-
-@dataclass(frozen=True, slots=True)
-class ChatMessageCreateDTO(BaseDTO):
-    chat_session_id: int
-    role: ChatRole
-    message: str
-
-
-@dataclass(frozen=True, slots=True)
-class ChatMessageResponseDTO(BaseDTO):
-    id: int
-    chat_session_id: int
-    role: str
-    message: str

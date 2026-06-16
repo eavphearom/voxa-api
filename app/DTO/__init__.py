@@ -1,10 +1,9 @@
 from app.DTO.LoginDTO import LoginDTO
 from app.DTO.RegisterDTO import RegisterDTO
+from app.DTO.ChatDTO import ChatCreateDTO, ChatMessageCreateDTO, ChatUpdateDTO
 from app.DTO.action_item_dtos import ActionItemCreateDTO, ActionItemResponseDTO, ActionItemUpdateDTO
 from app.DTO.base import BaseDTO
 from app.DTO.chat_dtos import (
-    ChatMessageCreateDTO,
-    ChatMessageResponseDTO,
     ChatSessionCreateDTO,
     ChatSessionResponseDTO,
     ChatSessionUpdateDTO,
@@ -23,8 +22,9 @@ __all__ = [
     "ActionItemResponseDTO",
     "ActionItemUpdateDTO",
     "BaseDTO",
+    "ChatCreateDTO",
     "ChatMessageCreateDTO",
-    "ChatMessageResponseDTO",
+    "ChatUpdateDTO",
     "ChatSessionCreateDTO",
     "ChatSessionResponseDTO",
     "ChatSessionUpdateDTO",

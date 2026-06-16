@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
 from rest_framework.response import Response
@@ -6,6 +8,9 @@ from rest_framework.views import exception_handler
 from app.Exceptions.application_exception import ApplicationException
 from app.Exceptions.not_found_exception import NotFoundException
 from app.Exceptions.validation_exception import ValidationException
+
+
+logger = logging.getLogger(__name__)
 
 
 def api_exception_handler(exc, context):
@@ -41,6 +46,7 @@ def api_exception_handler(exc, context):
         return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     if isinstance(exc, ApplicationException):
+        logger.exception("Application exception: %s", exc)
         return Response({"detail": str(exc)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     return None

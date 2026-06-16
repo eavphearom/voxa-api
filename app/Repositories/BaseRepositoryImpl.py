@@ -2,7 +2,7 @@ from typing import Any
 
 from django.core.paginator import Paginator
 
-from app.Repositories.Contracts.BaseRepository import BaseRepository
+from app.Repositories.BaseRepository import BaseRepository
 
 
 class BaseRepositoryImpl(BaseRepository):

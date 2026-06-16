@@ -37,6 +37,8 @@ class Command(BaseCommand):
 
         deleted_files, warnings = self._delete_files(files)
         updated_model_exports = self._update_model_exports(root, class_name)
+        updated_service_contract_exports = self._update_service_contract_exports(root, class_name)
+        updated_repository_contract_exports = self._update_repository_contract_exports(root, class_name)
         updated_repository_bindings = self._update_repository_bindings(root, class_name)
         updated_service_bindings = self._update_service_bindings(root, class_name)
         updated_route_registrations = self._update_route_registrations(root, context)
@@ -52,7 +54,15 @@ class Command(BaseCommand):
                 if item
             ],
             updated_route_registrations=updated_route_registrations,
-            updated_model_exports=updated_model_exports,
+            updated_exports=[
+                item
+                for item in [
+                    "model.__init__" if updated_model_exports else None,
+                    "Services.Contracts.__init__" if updated_service_contract_exports else None,
+                    "Repositories.Contracts.__init__" if updated_repository_contract_exports else None,
+                ]
+                if item
+            ],
             warnings=warnings,
         )
 
@@ -113,6 +123,41 @@ class Command(BaseCommand):
             value
             for value in self._extract_all_values(content)
             if value != class_name
+        ]
+        content = self._replace_or_append_all(content, exports)
+        path.write_text(content, encoding="utf-8")
+        return content != original
+
+    def _update_service_contract_exports(self, root: Path, class_name: str) -> bool:
+        return self._update_export_file(
+            root / "Services" / "Contracts" / "__init__.py",
+            [
+                f"from app.Services.Contracts.{class_name}Service import {class_name}Service",
+                f"from .{class_name}Service import {class_name}Service",
+            ],
+            f"{class_name}Service",
+        )
+
+    def _update_repository_contract_exports(self, root: Path, class_name: str) -> bool:
+        return self._update_export_file(
+            root / "Repositories" / "Contracts" / "__init__.py",
+            [
+                f"from app.Repositories.Contracts.{class_name}Repository import {class_name}Repository",
+                f"from .{class_name}Repository import {class_name}Repository",
+            ],
+            f"{class_name}Repository",
+        )
+
+    def _update_export_file(self, path: Path, import_lines: list[str], export_name: str) -> bool:
+        if not path.exists():
+            return False
+
+        original = path.read_text(encoding="utf-8")
+        content = self._remove_lines_containing(original, import_lines)
+        exports = [
+            value
+            for value in self._extract_all_values(content)
+            if value != export_name
         ]
         content = self._replace_or_append_all(content, exports)
         path.write_text(content, encoding="utf-8")
@@ -242,7 +287,7 @@ class Command(BaseCommand):
         deleted_files: list[Path],
         updated_bindings: list[str],
         updated_route_registrations: bool,
-        updated_model_exports: bool,
+        updated_exports: list[str],
         warnings: list[str],
     ) -> None:
         self.stdout.write(self.style.SUCCESS("\nRemove feature complete."))
@@ -264,8 +309,12 @@ class Command(BaseCommand):
         self.stdout.write("\nUpdated route registrations:")
         self.stdout.write("* Yes" if updated_route_registrations else "* No")
 
-        self.stdout.write("\nUpdated model exports:")
-        self.stdout.write("* Yes" if updated_model_exports else "* No")
+        self.stdout.write("\nUpdated exports:")
+        if updated_exports:
+            for export_file in updated_exports:
+                self.stdout.write(f"* {export_file}")
+        else:
+            self.stdout.write("* None")
 
         self.stdout.write("\nWarnings:")
         if warnings:

@@ -1,40 +1,86 @@
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.DTO import ChatMessageCreateDTO, ChatSessionCreateDTO, ChatSessionUpdateDTO
-from app.Enums import ChatRole
+from app.Authentication.JWTAuthentication import AppJWTAuthentication
+from app.DTO.ChatDTO import ChatCreateDTO, ChatMessageCreateDTO, ChatUpdateDTO
 from app.Providers import container
-from app.Services.Contracts import ChatServiceContract
+from app.Services.Contracts.ChatService import ChatService
 
 
-class ChatSessionController(APIView):
-    def get(self, request):
-        service = container.resolve(ChatServiceContract)
-        meeting_id = int(request.query_params.get("meeting_id"))
-        return Response([session.to_dict() for session in service.list_by_meeting(meeting_id)])
+class ChatController(APIView):
+    authentication_classes = [AppJWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        service = container.resolve(ChatServiceContract)
-        dto = ChatSessionCreateDTO(
-            meeting_id=int(request.data.get("meeting_id")),
-            user_id=int(request.data.get("user_id")),
-            title=request.data.get("title", ""),
+    def get(self, request, id: int | None = None):
+        service = container.resolve(ChatService)
+        user_id = request.user.id
+
+        if id is None:
+            return Response(
+                {
+                    "error": False,
+                    "status": "success",
+                    "data": service.list(user_id),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(
+            {
+                "error": False,
+                "status": "success",
+                "data": service.get_detail(id, user_id),
+            },
+            status=status.HTTP_200_OK,
         )
-        return Response(service.create_session(dto).to_dict(), status=status.HTTP_201_CREATED)
 
-    def patch(self, request, session_id: int):
-        service = container.resolve(ChatServiceContract)
-        dto = ChatSessionUpdateDTO(title=request.data.get("title"))
-        return Response(service.update_session(session_id, dto).to_dict())
+    def post(self, request, id: int | None = None):
+        service = container.resolve(ChatService)
+        user_id = request.user.id
 
+        if id is not None:
+            dto = ChatMessageCreateDTO.from_request(request.data)
+            return Response(
+                {
+                    "error": False,
+                    "status": "success",
+                    "data": service.send_message(id, user_id, dto),
+                },
+                status=status.HTTP_201_CREATED,
+            )
 
-class ChatMessageController(APIView):
-    def post(self, request):
-        service = container.resolve(ChatServiceContract)
-        dto = ChatMessageCreateDTO(
-            chat_session_id=int(request.data.get("chat_session_id")),
-            role=ChatRole(request.data.get("role", ChatRole.USER.value)),
-            message=request.data.get("message", ""),
+        dto = ChatCreateDTO.from_request(request.data)
+        return Response(
+            {
+                "error": False,
+                "status": "success",
+                "data": service.create(user_id, dto),
+            },
+            status=status.HTTP_201_CREATED,
         )
-        return Response(service.add_message(dto).to_dict(), status=status.HTTP_201_CREATED)
+
+    def put(self, request, id: int):
+        service = container.resolve(ChatService)
+        dto = ChatUpdateDTO.from_request(request.data)
+        return Response(
+            {
+                "error": False,
+                "status": "success",
+                "data": service.update(id, request.user.id, dto),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def delete(self, request, id: int):
+        service = container.resolve(ChatService)
+        service.delete(id, request.user.id)
+        return Response(
+            {
+                "error": False,
+                "status": "success",
+                "data": True,
+            },
+            status=status.HTTP_200_OK,
+        )

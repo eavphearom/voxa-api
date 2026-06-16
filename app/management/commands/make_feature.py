@@ -26,6 +26,8 @@ class Command(BaseCommand):
 
         self._create_feature_files(root, context)
         self._update_model_exports(root, class_name)
+        self._update_service_contract_exports(root, class_name)
+        self._update_repository_contract_exports(root, class_name)
         self._update_repository_bindings(root, context)
         self._update_service_bindings(root, context)
         self._update_user_v1_routes(root, context)
@@ -59,13 +61,40 @@ class Command(BaseCommand):
     def _update_model_exports(self, root: Path, class_name: str) -> None:
         path = root / "model" / "__init__.py"
         content = path.read_text(encoding="utf-8") if path.exists() else ""
-        import_line = f"from .{class_name} import {class_name}"
-        if import_line not in content:
+        import_line = f"from app.model.{class_name} import {class_name}"
+        relative_import_line = f"from .{class_name} import {class_name}"
+        if import_line not in content and relative_import_line not in content:
             content = self._append_line(content, import_line)
 
         exports = self._extract_all_values(content)
         if class_name not in exports:
             exports.append(class_name)
+        path.write_text(self._replace_or_append_all(content, exports), encoding="utf-8")
+
+    def _update_service_contract_exports(self, root: Path, class_name: str) -> None:
+        export_name = f"{class_name}Service"
+        self._update_export_file(
+            root / "Services" / "Contracts" / "__init__.py",
+            f"from app.Services.Contracts.{export_name} import {export_name}",
+            export_name,
+        )
+
+    def _update_repository_contract_exports(self, root: Path, class_name: str) -> None:
+        export_name = f"{class_name}Repository"
+        self._update_export_file(
+            root / "Repositories" / "Contracts" / "__init__.py",
+            f"from app.Repositories.Contracts.{export_name} import {export_name}",
+            export_name,
+        )
+
+    def _update_export_file(self, path: Path, import_line: str, export_name: str) -> None:
+        content = path.read_text(encoding="utf-8") if path.exists() else ""
+        if import_line not in content:
+            content = self._append_line(content, import_line)
+
+        exports = self._extract_all_values(content)
+        if export_name not in exports:
+            exports.append(export_name)
         path.write_text(self._replace_or_append_all(content, exports), encoding="utf-8")
 
     def _update_repository_bindings(self, root: Path, context: dict[str, str]) -> None:
@@ -76,7 +105,7 @@ class Command(BaseCommand):
             f"from app.Repositories.Contracts.{class_name}Repository import {class_name}Repository",
             f"from app.Repositories.{class_name}RepositoryImpl import {class_name}RepositoryImpl",
         ]
-        binding = f"    {class_name}Repository: lambda container: {class_name}RepositoryImpl(),"
+        binding = f"    {class_name}Repository: {class_name}RepositoryImpl,"
         path.write_text(
             self._append_imports_and_dict_binding(content, "REPOSITORY_BINDINGS", imports, binding),
             encoding="utf-8",
@@ -298,7 +327,7 @@ class {class_name}(models.Model):
 
     def _repository_contract_template(self, context: dict[str, str]) -> str:
         class_name = context["class_name"]
-        return f'''from app.Repositories.Contracts.BaseRepository import BaseRepository
+        return f'''from app.Repositories.BaseRepository import BaseRepository
 
 
 class {class_name}Repository(BaseRepository):
