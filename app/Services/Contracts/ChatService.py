@@ -18,6 +18,10 @@ class ChatService(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def get_message_detail(self, chat_id: int, user_id: int, message_id: int) -> dict[str, Any]:
+        raise NotImplementedError
+
+    @abstractmethod
     def update(self, chat_id: int, user_id: int, dto: ChatUpdateDTO) -> dict[str, Any]:
         raise NotImplementedError
 

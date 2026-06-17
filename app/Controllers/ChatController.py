@@ -13,7 +13,7 @@ class ChatController(APIView):
     authentication_classes = [AppJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, id: int | None = None):
+    def get(self, request, id: int | None = None, message_id: int | None = None):
         service = container.resolve(ChatService)
         user_id = request.user.id
 
@@ -27,6 +27,16 @@ class ChatController(APIView):
                 status=status.HTTP_200_OK,
             )
 
+        if message_id is not None:
+            return Response(
+                {
+                    "error": False,
+                    "status": "success",
+                    "data": service.get_message_detail(id, user_id, message_id),
+                },
+                status=status.HTTP_200_OK,
+            )
+
         return Response(
             {
                 "error": False,
@@ -36,12 +46,12 @@ class ChatController(APIView):
             status=status.HTTP_200_OK,
         )
 
-    def post(self, request, id: int | None = None):
+    def post(self, request, id: int | None = None, message_id: int | None = None):
         service = container.resolve(ChatService)
         user_id = request.user.id
 
         if id is not None:
-            dto = ChatMessageCreateDTO.from_request(request.data)
+            dto = ChatMessageCreateDTO.from_request(request.data, request.FILES)
             return Response(
                 {
                     "error": False,

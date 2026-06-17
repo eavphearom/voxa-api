@@ -12,5 +12,6 @@ urlpatterns = [
     path("chats", ChatController.as_view(), name="chats-index"),
     path("chats/<int:id>", ChatController.as_view(), name="chats-show"),
     path("chats/<int:id>/messages", ChatController.as_view(), name="chats-messages-create"),
+    path("chats/<int:id>/messages/<int:message_id>", ChatController.as_view(), name="chats-messages-show"),
     # End Chat routes
 ]
