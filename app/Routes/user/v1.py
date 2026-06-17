@@ -2,6 +2,7 @@ from django.urls import path
 
 from app.Controllers.AuthController import AuthController
 from app.Controllers.ChatController import ChatController
+from app.Controllers.MeetingController import MeetingController
 
 
 urlpatterns = [
@@ -14,4 +15,11 @@ urlpatterns = [
     path("chats/<int:id>/messages", ChatController.as_view(), name="chats-messages-create"),
     path("chats/<int:id>/messages/<int:message_id>", ChatController.as_view(), name="chats-messages-show"),
     # End Chat routes
+    # Meeting routes
+    path("meetings", MeetingController.as_view(), name="meetings-index"),
+    path("meetings/<int:id>", MeetingController.as_view(), name="meetings-show"),
+    path("meetings/create", MeetingController.as_view(), name="meetings-create"),
+    path("meetings/<int:id>/update", MeetingController.as_view(), name="meetings-update"),
+    path("meetings/<int:id>/delete", MeetingController.as_view(), name="meetings-delete"),
+    # End Meeting routes
 ]

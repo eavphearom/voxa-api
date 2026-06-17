@@ -6,6 +6,8 @@ from app.Repositories.Contracts.ChatMessageRepository import ChatMessageReposito
 from app.Repositories.ChatMessageRepositoryImpl import ChatMessageRepositoryImpl
 from app.Repositories.Contracts.ChatMessageAttachmentRepository import ChatMessageAttachmentRepository
 from app.Repositories.ChatMessageAttachmentRepositoryImpl import ChatMessageAttachmentRepositoryImpl
+from app.Repositories.Contracts.MeetingRepository import MeetingRepository
+from app.Repositories.MeetingRepositoryImpl import MeetingRepositoryImpl
 
 
 REPOSITORY_BINDINGS = {
@@ -13,4 +15,5 @@ REPOSITORY_BINDINGS = {
     ChatRepository: ChatRepositoryImpl,
     ChatMessageRepository: ChatMessageRepositoryImpl,
     ChatMessageAttachmentRepository: ChatMessageAttachmentRepositoryImpl,
+    MeetingRepository: MeetingRepositoryImpl,
 }

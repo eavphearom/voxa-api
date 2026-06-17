@@ -1,6 +1,7 @@
 from app.Enums.ActionItemStatus import ActionItemStatus
 from app.Enums.AttachmentType import AttachmentType
 from app.Enums.ChatRole import ChatRole
+from app.Enums.ChatType import ChatType
 from app.Enums.MeetingStatus import MeetingStatus
 from app.Enums.Role import Role
 
@@ -11,6 +12,7 @@ __all__ = [
     "AttachmentType",
     "ChatMessageRole",
     "ChatRole",
+    "ChatType",
     "MeetingStatus",
     "Role",
 ]

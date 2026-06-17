@@ -14,6 +14,9 @@ from app.Services.Contracts.ChatAttachmentContentService import ChatAttachmentCo
 from app.Services.ChatAttachmentContentServiceImpl import ChatAttachmentContentServiceImpl
 from app.Services.Contracts.GeminiService import GeminiService
 from app.Services.GeminiServiceImpl import GeminiServiceImpl
+from app.Repositories.Contracts.MeetingRepository import MeetingRepository
+from app.Services.Contracts.MeetingService import MeetingService
+from app.Services.MeetingServiceImpl import MeetingServiceImpl
 
 
 SERVICE_BINDINGS = {
@@ -31,4 +34,5 @@ SERVICE_BINDINGS = {
     ),
     ChatAttachmentContentService: lambda container: ChatAttachmentContentServiceImpl(),
     GeminiService: lambda container: GeminiServiceImpl(),
+    MeetingService: lambda container: MeetingServiceImpl(container.resolve(MeetingRepository)),
 }
