@@ -1,27 +1,53 @@
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.DTO import FolderCreateDTO, FolderUpdateDTO
+from app.Authentication.JWTAuthentication import AppJWTAuthentication
+from app.DTO.folder_dtos import FolderCreateDTO, FolderUpdateDTO
 from app.Providers import container
-from app.Services.Contracts import FolderServiceContract
+from app.Services.Contracts.FolderService import FolderService
 
 
 class FolderController(APIView):
-    def get(self, request):
-        service = container.resolve(FolderServiceContract)
-        user_id = int(request.query_params.get("user_id"))
-        return Response([folder.to_dict() for folder in service.list_by_user(user_id)])
+    authentication_classes = [AppJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    action = None
 
-    def post(self, request):
-        service = container.resolve(FolderServiceContract)
-        dto = FolderCreateDTO(
-            user_id=int(request.data.get("user_id")),
-            name=request.data.get("name", ""),
+    def get(self, request, id: int | None = None, meeting_id: int | None = None):
+        service = container.resolve(FolderService)
+        user_id = request.user.id
+        if self.action == "meetings":
+            return self._success(service.list_meetings(id, user_id))
+        if id is None:
+            return self._success(service.list(user_id))
+        return self._success(service.get_detail(id, user_id))
+
+    def post(self, request, id: int | None = None, meeting_id: int | None = None):
+        service = container.resolve(FolderService)
+        if self.action == "meeting":
+            return self._success(
+                service.add_meeting(id, meeting_id, request.user.id),
+                status.HTTP_201_CREATED,
+            )
+        dto = FolderCreateDTO.from_request(request.data)
+        return self._success(service.create(request.user.id, dto), status.HTTP_201_CREATED)
+
+    def put(self, request, id: int):
+        service = container.resolve(FolderService)
+        dto = FolderUpdateDTO.from_request(request.data)
+        return self._success(service.update(id, request.user.id, dto))
+
+    def delete(self, request, id: int, meeting_id: int | None = None):
+        service = container.resolve(FolderService)
+        if self.action == "meeting":
+            service.remove_meeting(id, meeting_id, request.user.id)
+        else:
+            service.delete(id, request.user.id)
+        return self._success(True)
+
+    def _success(self, data, response_status=status.HTTP_200_OK):
+        return Response(
+            {"error": False, "status": "success", "data": data},
+            status=response_status,
         )
-        return Response(service.create(dto).to_dict(), status=status.HTTP_201_CREATED)
-
-    def patch(self, request, folder_id: int):
-        service = container.resolve(FolderServiceContract)
-        dto = FolderUpdateDTO(name=request.data.get("name"))
-        return Response(service.update(folder_id, dto).to_dict())

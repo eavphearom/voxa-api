@@ -2,6 +2,7 @@ from django.urls import path
 
 from app.Controllers.AuthController import AuthController
 from app.Controllers.ChatController import ChatController
+from app.Controllers.FolderController import FolderController
 from app.Controllers.MeetingController import MeetingController
 
 
@@ -16,10 +17,29 @@ urlpatterns = [
     path("chats/<int:id>/messages/<int:message_id>", ChatController.as_view(), name="chats-messages-show"),
     # End Chat routes
     # Meeting routes
+    path("meetings/import", MeetingController.as_view(action="import_meeting"), name="meetings-import"),
+    path("meetings/record/start", MeetingController.as_view(action="record_start"), name="meetings-record-start"),
+    path(
+        "meetings/<int:id>/record/chunk",
+        MeetingController.as_view(action="record_chunk"),
+        name="meetings-record-chunk",
+    ),
+    path(
+        "meetings/<int:id>/record/finish",
+        MeetingController.as_view(action="record_finish"),
+        name="meetings-record-finish",
+    ),
     path("meetings", MeetingController.as_view(), name="meetings-index"),
     path("meetings/<int:id>", MeetingController.as_view(), name="meetings-show"),
-    path("meetings/create", MeetingController.as_view(), name="meetings-create"),
-    path("meetings/<int:id>/update", MeetingController.as_view(), name="meetings-update"),
-    path("meetings/<int:id>/delete", MeetingController.as_view(), name="meetings-delete"),
     # End Meeting routes
+    # Folder routes
+    path("folders", FolderController.as_view(), name="folders-index"),
+    path("folders/<int:id>", FolderController.as_view(), name="folders-show"),
+    path("folders/<int:id>/meetings", FolderController.as_view(action="meetings"), name="folders-meetings"),
+    path(
+        "folders/<int:id>/meetings/<int:meeting_id>",
+        FolderController.as_view(action="meeting"),
+        name="folders-meeting",
+    ),
+    # End Folder routes
 ]

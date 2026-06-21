@@ -1,26 +1,30 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from app.DTO.MeetingDTO import MeetingDTO
+from app.DTO.MeetingDTO import MeetingImportDTO, MeetingRecordStartDTO
 
 
 class MeetingService(ABC):
     @abstractmethod
-    def get_all(self) -> list[dict[str, Any]]:
+    def import_meeting(self, user_id: int, dto: MeetingImportDTO) -> dict[str, Any]:
         raise NotImplementedError
 
     @abstractmethod
-    def get_by_id(self, object_id: int) -> dict[str, Any]:
+    def start_recording(self, user_id: int, dto: MeetingRecordStartDTO) -> dict[str, Any]:
         raise NotImplementedError
 
     @abstractmethod
-    def create(self, dto: MeetingDTO) -> dict[str, Any]:
+    def transcribe_recording_chunk(self, meeting_id: int, user_id: int, chunk) -> dict[str, Any]:
         raise NotImplementedError
 
     @abstractmethod
-    def update(self, object_id: int, dto: MeetingDTO) -> dict[str, Any]:
+    def finish_recording(self, meeting_id: int, user_id: int, source_file) -> dict[str, Any]:
         raise NotImplementedError
 
     @abstractmethod
-    def delete(self, object_id: int) -> bool:
+    def list(self, user_id: int) -> list[dict[str, Any]]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_detail(self, meeting_id: int, user_id: int) -> dict[str, Any]:
         raise NotImplementedError

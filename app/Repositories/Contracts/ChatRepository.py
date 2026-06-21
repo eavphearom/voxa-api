@@ -9,6 +9,14 @@ class ChatRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def create_for_meeting(self, user_id: int, meeting_id: int, title: str, chat_type: str) -> Chat:
+        raise NotImplementedError
+
+    @abstractmethod
+    def find_by_meeting(self, user_id: int, meeting_id: int, chat_type: str) -> Chat | None:
+        raise NotImplementedError
+
+    @abstractmethod
     def list_by_user(self, user_id: int):
         raise NotImplementedError
 

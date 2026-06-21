@@ -1,21 +1,26 @@
 from dataclasses import dataclass
 
-from app.DTO.base import BaseDTO
-
 
 @dataclass(frozen=True, slots=True)
-class FolderCreateDTO(BaseDTO):
-    user_id: int
+class FolderCreateDTO:
     name: str
 
+    @classmethod
+    def from_request(cls, data) -> "FolderCreateDTO":
+        return cls(name=str(data.get("name", "")).strip())
+
 
 @dataclass(frozen=True, slots=True)
-class FolderUpdateDTO(BaseDTO):
-    name: str | None = None
+class FolderUpdateDTO:
+    name: str
+
+    @classmethod
+    def from_request(cls, data) -> "FolderUpdateDTO":
+        return cls(name=str(data.get("name", "")).strip())
 
 
 @dataclass(frozen=True, slots=True)
-class FolderResponseDTO(BaseDTO):
+class FolderResponseDTO:
     id: int
     user_id: int
     name: str

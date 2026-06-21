@@ -1,6 +1,10 @@
+import re
 from typing import Any
 
 from django.contrib.auth.hashers import check_password, make_password
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.validators import validate_email
+from django.db import IntegrityError
 from rest_framework_simplejwt.tokens import AccessToken
 
 from app.DTO.LoginDTO import LoginDTO
@@ -18,25 +22,28 @@ class AuthServiceImpl(AuthService):
     def register(self, dto: RegisterDTO) -> dict[str, Any]:
         self._validate_register_data(dto)
 
-        created_user = self.user_repository.create(
-            {
-                "name": dto.name.strip(),
-                "email": dto.email.strip().lower(),
-                "phone": dto.phone.strip(),
-                "password": make_password(dto.password),
-                "role": Role.USER.value,
-            }
-        )
-        return True
-        # return {
-        #     "id": created_user.id,
-        #     "name": created_user.name,
-        #     "email": created_user.email,
-        #     "phone": created_auser.phone,
-        #     "role": created_user.role,
-        #     "token": "",
-        #     "profile": created_user.avatar or "",
-        # }
+        try:
+            created_user = self.user_repository.create(
+                {
+                    "name": dto.name.strip(),
+                    "email": dto.email.strip().lower(),
+                    "phone": dto.phone.strip(),
+                    "password": make_password(dto.password),
+                    "role": Role.USER.value,
+                }
+            )
+        except IntegrityError as exc:
+            raise ValidationException("Email or phone already exists") from exc
+
+        return {
+            "id": created_user.id,
+            "name": created_user.name,
+            "email": created_user.email,
+            "phone": created_user.phone,
+            "role": created_user.role,
+            "token": "",
+            "profile": created_user.avatar or "",
+        }
 
     def login(self, dto: LoginDTO) -> dict[str, Any]:
         self._validate_login_data(dto)
@@ -63,8 +70,14 @@ class AuthServiceImpl(AuthService):
             raise ValidationException("Name is required")
         if not dto.email or not dto.email.strip():
             raise ValidationException("Email is required")
+        try:
+            validate_email(dto.email.strip())
+        except DjangoValidationError as exc:
+            raise ValidationException("Email format is invalid") from exc
         if not dto.phone or not dto.phone.strip():
             raise ValidationException("Phone is required")
+        if not re.fullmatch(r"\+?[0-9]{8,20}", dto.phone.strip()):
+            raise ValidationException("Phone must contain 8 to 20 digits")
         if not dto.password:
             raise ValidationException("Password is required")
         if len(dto.password) < 6:

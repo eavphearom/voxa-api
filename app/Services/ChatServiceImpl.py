@@ -3,6 +3,7 @@ from typing import Any
 
 from app.DTO.ChatDTO import ChatCreateDTO, ChatMessageCreateDTO, ChatUpdateDTO
 from app.Enums.ChatRole import ChatRole
+from app.Enums.ChatType import ChatType
 from app.Exceptions import ApplicationException, NotFoundException, ValidationException
 from app.Repositories.Contracts.ChatMessageRepository import ChatMessageRepository
 from app.Repositories.Contracts.ChatRepository import ChatRepository
@@ -96,6 +97,7 @@ class ChatServiceImpl(ChatService):
             user_id=user_id,
         )
         gemini_prompt, attachment_parts = self.attachment_content_service.build_gemini_input(dto)
+        gemini_prompt = self._add_meeting_context(chat, user_id, gemini_prompt)
         try:
             assistant_content = self.gemini_service.generate_response(
                 gemini_prompt,
@@ -119,6 +121,30 @@ class ChatServiceImpl(ChatService):
             "user_message": self._message_to_dict(user_message, user_attachments),
             "assistant_message": self._message_to_dict(assistant_message, []),
         }
+
+    def _add_meeting_context(self, chat, user_id: int, prompt: str) -> str:
+        if chat.type != ChatType.GENERAL.value or chat.meeting_id is None:
+            return prompt
+
+        meeting_chat = self.chat_repository.find_by_meeting(
+            user_id,
+            chat.meeting_id,
+            ChatType.MEETING.value,
+        )
+        if meeting_chat is None:
+            return prompt
+        transcript = "\n\n".join(
+            message.content
+            for message in self.message_repository.list_by_chat(meeting_chat.id)
+            if message.content
+        ).strip()
+        if not transcript:
+            return prompt
+        return (
+            "Use the following meeting transcript as authoritative context for the user's request.\n\n"
+            f"Meeting transcript:\n{transcript}\n\n"
+            f"User request:\n{prompt}"
+        )
 
     def _get_owned_chat(self, chat_id: int, user_id: int):
         chat = self.chat_repository.find_by_id_for_user(chat_id, user_id)
