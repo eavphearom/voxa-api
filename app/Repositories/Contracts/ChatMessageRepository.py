@@ -18,3 +18,7 @@ class ChatMessageRepository(BaseRepository, ABC):
     @abstractmethod
     def list_by_chat(self, chat_id: int):
         raise NotImplementedError
+
+    @abstractmethod
+    def find_by_id_for_chat(self, message_id: int, chat_id: int) -> ChatMessage | None:
+        raise NotImplementedError

@@ -30,6 +30,9 @@ class ChatMessageRepositoryImpl(BaseRepositoryImpl, ChatMessageRepository):
     def list_by_chat(self, chat_id: int):
         return ChatMessage.objects.filter(chat_id=chat_id, is_deleted=False).order_by("created_at", "id")
 
+    def find_by_id_for_chat(self, message_id: int, chat_id: int) -> ChatMessage | None:
+        return ChatMessage.objects.filter(id=message_id, chat_id=chat_id, is_deleted=False).first()
+
     def delete(self, object_id: int) -> bool:
         message = self.get_by_id(object_id)
         if message is None:

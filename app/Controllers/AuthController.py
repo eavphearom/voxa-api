@@ -30,7 +30,6 @@ class AuthController(APIView):
 
     def register(self, request):
         service = container.resolve(AuthService)
-
         dto = RegisterDTO(
             name=request.data.get("name", ""),
             email=request.data.get("email", ""),
@@ -38,7 +37,18 @@ class AuthController(APIView):
             password=request.data.get("password", ""),
         )
 
-        data = service.register(dto)
+        try:
+            data = service.register(dto)
+        except ValidationException as exc:
+            return Response(
+                {
+                    "error": True,
+                    "success": False,
+                    "message": str(exc),
+                    "data": None,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         return Response(
             {

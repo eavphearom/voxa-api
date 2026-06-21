@@ -1,41 +1,111 @@
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.DTO import MeetingCreateDTO, MeetingUpdateDTO
-from app.Enums import MeetingStatus
+from app.Authentication.JWTAuthentication import AppJWTAuthentication
+from app.DTO.MeetingDTO import MeetingImportDTO, MeetingRecordStartDTO
 from app.Providers import container
-from app.Services.Contracts import MeetingServiceContract
+from app.Services.Contracts.MeetingService import MeetingService
 
 
 class MeetingController(APIView):
-    def get(self, request, meeting_id: int | None = None):
-        service = container.resolve(MeetingServiceContract)
-        if meeting_id is not None:
-            return Response(service.get(meeting_id).to_dict())
-        user_id = int(request.query_params.get("user_id"))
-        return Response([meeting.to_dict() for meeting in service.list_by_user(user_id)])
+    authentication_classes = [AppJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    action = None
 
-    def post(self, request):
-        service = container.resolve(MeetingServiceContract)
-        dto = MeetingCreateDTO(
-            user_id=int(request.data.get("user_id")),
-            title=request.data.get("title", ""),
-            description=request.data.get("description", ""),
-            audio_file=request.FILES.get("audio_file"),
-            duration=int(request.data.get("duration", 0)),
-            language=request.data.get("language", ""),
-        )
-        return Response(service.create(dto).to_dict(), status=status.HTTP_201_CREATED)
+    def get(self, request, id: int | None = None):
+        service = container.resolve(MeetingService)
+        user_id = request.user.id
 
-    def patch(self, request, meeting_id: int):
-        service = container.resolve(MeetingServiceContract)
-        status_value = request.data.get("status")
-        dto = MeetingUpdateDTO(
-            title=request.data.get("title"),
-            description=request.data.get("description"),
-            duration=request.data.get("duration"),
-            status=MeetingStatus(status_value) if status_value else None,
-            language=request.data.get("language"),
+        if id is None:
+            return Response(
+                {
+                    "error": False,
+                    "status": "OK",
+                    "data": service.list(user_id),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(
+            {
+                "error": False,
+                "status": "OK",
+                "data": service.get_detail(id, user_id),
+            },
+            status=status.HTTP_200_OK,
         )
-        return Response(service.update(meeting_id, dto).to_dict())
+
+    def post(self, request, id: int | None = None):
+        if self.action == "import_meeting":
+            return self.import_meeting(request)
+        if self.action == "record_start":
+            return self.start_recording(request)
+        if self.action == "record_chunk":
+            return self.record_chunk(request, id)
+        if self.action == "record_finish":
+            return self.finish_recording(request, id)
+
+        return Response(
+            {
+                "error": True,
+                "status": "error",
+                "message": "Unsupported meeting action",
+                "data": None,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def import_meeting(self, request):
+        service = container.resolve(MeetingService)
+        dto = MeetingImportDTO.from_request(request.data, request.FILES)
+        data = service.import_meeting(request.user.id, dto)
+
+        return Response(
+            {
+                "error": False,
+                "status": "OK",
+                "message": "Meeting uploaded successfully",
+                "data": data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    def start_recording(self, request):
+        service = container.resolve(MeetingService)
+        dto = MeetingRecordStartDTO.from_request(request.data)
+        return Response(
+            {
+                "error": False,
+                "status": "OK",
+                "message": "Recording meeting started",
+                "data": service.start_recording(request.user.id, dto),
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    def record_chunk(self, request, meeting_id: int):
+        service = container.resolve(MeetingService)
+        chunk = request.FILES.get("chunk") or request.FILES.get("audio_chunk")
+        return Response(
+            {
+                "error": False,
+                "status": "OK",
+                "data": service.transcribe_recording_chunk(meeting_id, request.user.id, chunk),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def finish_recording(self, request, meeting_id: int):
+        service = container.resolve(MeetingService)
+        source_file = request.FILES.get("file") or request.FILES.get("recording")
+        return Response(
+            {
+                "error": False,
+                "status": "OK",
+                "message": "Recording queued for processing",
+                "data": service.finish_recording(meeting_id, request.user.id, source_file),
+            },
+            status=status.HTTP_202_ACCEPTED,
+        )

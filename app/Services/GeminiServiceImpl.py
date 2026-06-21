@@ -34,11 +34,16 @@ print("Hello World")
 ```
 """.strip()
 
-    def generate_response(self, message: str, history: list[dict[str, Any]] | None = None) -> str:
+    def generate_response(
+        self,
+        message: str,
+        history: list[dict[str, Any]] | None = None,
+        attachment_parts: list[dict[str, Any]] | None = None,
+    ) -> str:
         if not settings.GEMINI_API_KEY:
             raise ApplicationException("GEMINI_API_KEY is not configured")
 
-        payload = self._build_payload(message, history or [])
+        payload = self._build_payload(message, history or [], attachment_parts or [])
         response_data = self._request_available_model(payload)
         return self._extract_text(response_data)
 
@@ -103,7 +108,12 @@ print("Hello World")
             return f"Gemini API request failed: {message}"
         return f"Gemini API request failed with status {exc.code}"
 
-    def _build_payload(self, message: str, history: list[dict[str, Any]]) -> dict[str, Any]:
+    def _build_payload(
+        self,
+        message: str,
+        history: list[dict[str, Any]],
+        attachment_parts: list[dict[str, Any]],
+    ) -> dict[str, Any]:
         contents = []
         for item in history[-20:]:
             role = "model" if item.get("role") == "assistant" else "user"
@@ -126,7 +136,7 @@ print("Hello World")
 
         if contents and contents[-1]["role"] == "user":
             contents.pop()
-        contents.append({"role": "user", "parts": [{"text": message}]})
+        contents.append({"role": "user", "parts": [{"text": message}, *attachment_parts]})
         return {
             "systemInstruction": {
                 "parts": [{"text": self.MARKDOWN_SYSTEM_INSTRUCTION}],
