@@ -13,9 +13,17 @@ class UserRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def find_by_google_id(self, google_id: str) -> User | None:
+        raise NotImplementedError
+
+    @abstractmethod
     def find_by_phone(self, phone: str) -> User | None:
         raise NotImplementedError
 
     @abstractmethod
     def find_by_id(self, user_id: int) -> User | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def update(self, user: User, data: dict) -> User:
         raise NotImplementedError

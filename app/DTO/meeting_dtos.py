@@ -6,6 +6,21 @@ from app.Enums import MeetingStatus
 
 
 @dataclass(frozen=True, slots=True)
+class MeetingListFilterDTO(BaseDTO):
+    search: str = ""
+    start_date: str = ""
+    end_date: str = ""
+
+    @classmethod
+    def from_query_params(cls, query_params) -> "MeetingListFilterDTO":
+        return cls(
+            search=str(query_params.get("search", "")).strip(),
+            start_date=str(query_params.get("startDate", "")).strip(),
+            end_date=str(query_params.get("endDate", "")).strip(),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class MeetingCreateDTO(BaseDTO):
     user_id: int
     title: str

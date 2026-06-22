@@ -5,8 +5,10 @@ from rest_framework.views import APIView
 
 from app.Authentication.JWTAuthentication import AppJWTAuthentication
 from app.DTO.LoginDTO import LoginDTO
+from app.DTO.GoogleLoginDTO import GoogleLoginDTO
 from app.DTO.RegisterDTO import RegisterDTO
 from app.Exceptions import ValidationException
+from app.Helpers.file_url import build_file_url
 from app.Providers import container
 from app.Services.Contracts.AuthService import AuthService
 
@@ -24,6 +26,8 @@ class AuthController(APIView):
     def post(self, request):
         if self.action == "login":
             return self.login(request)
+        if self.action == "google_login":
+            return self.google_login(request)
         if self.action == "logout":
             return self.logout(request)
         return self.register(request)
@@ -50,6 +54,8 @@ class AuthController(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        data["profile"] = build_file_url(request, data.get("profile"))
+        data["avatar"] = data["profile"]
         return Response(
             {
                 "error": False,
@@ -78,15 +84,54 @@ class AuthController(APIView):
                         "message": "Invalid email or password",
                         "data": None,
                     },
-                    status=status.HTTP_401_UNAUTHORIZED,
+                    # Invalid credentials are a login-form validation error. Using
+                    # 400 here also prevents global expired-token 401 handlers from
+                    # replacing this message with "Unauthorized. Please login again."
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
             raise
 
+        data["profile"] = build_file_url(request, data.get("profile"))
+        data["avatar"] = data["profile"]
         return Response(
             {
                 "error": False,
                 "success": True,
                 "message": "Login successfully",
+                "data": data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def google_login(self, request):
+        service = container.resolve(AuthService)
+        dto = GoogleLoginDTO(id_token=request.data.get("id_token", ""))
+
+        try:
+            data = service.google_login(dto)
+        except ValidationException as exc:
+            message = str(exc)
+            response_status = status.HTTP_400_BAD_REQUEST
+            if message == "Google token verification failed":
+                response_status = status.HTTP_502_BAD_GATEWAY
+            return Response(
+                {
+                    "error": True,
+                    "success": False,
+                    "message": message,
+                    "data": None,
+                },
+                status=response_status,
+            )
+
+        user_data = data.get("user", {})
+        user_data["profile"] = build_file_url(request, user_data.get("profile"))
+        user_data["avatar"] = user_data["profile"]
+        return Response(
+            {
+                "error": False,
+                "success": True,
+                "message": "Google login successful",
                 "data": data,
             },
             status=status.HTTP_200_OK,

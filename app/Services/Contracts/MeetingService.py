@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from app.DTO.MeetingDTO import MeetingImportDTO, MeetingRecordStartDTO
+from app.DTO.meeting_dtos import MeetingListFilterDTO
 
 
 class MeetingService(ABC):
@@ -22,9 +23,13 @@ class MeetingService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def list(self, user_id: int) -> list[dict[str, Any]]:
+    def list(self, user_id: int, filters: MeetingListFilterDTO | None = None) -> list[dict[str, Any]]:
         raise NotImplementedError
 
     @abstractmethod
     def get_detail(self, meeting_id: int, user_id: int) -> dict[str, Any]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete(self, meeting_id: int, user_id: int) -> bool:
         raise NotImplementedError

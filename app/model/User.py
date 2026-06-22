@@ -10,7 +10,9 @@ class User(models.Model):
 
     phone = models.CharField(
         max_length=30,
-        unique=True
+        unique=True,
+        null=True,
+        blank=True,
     )
 
     password = models.CharField(

@@ -4,12 +4,19 @@ from app.Controllers.AuthController import AuthController
 from app.Controllers.ChatController import ChatController
 from app.Controllers.FolderController import FolderController
 from app.Controllers.MeetingController import MeetingController
+from app.Controllers.UserController import UserController
 
 
 urlpatterns = [
     path("auth/register", AuthController.as_view(), name="auth-register"),
     path("auth/login", AuthController.as_view(action="login"), name="auth-login"),
+    path(
+        "auth/google-login",
+        AuthController.as_view(action="google_login"),
+        name="auth-google-login",
+    ),
     path("auth/logout", AuthController.as_view(action="logout"), name="auth-logout"),
+    path("profile", UserController.as_view(), name="user-profile"),
     # Chat routes
     path("chats", ChatController.as_view(), name="chats-index"),
     path("chats/<int:id>", ChatController.as_view(), name="chats-show"),

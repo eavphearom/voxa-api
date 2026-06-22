@@ -1,6 +1,7 @@
 import logging
 import os
 import tempfile
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -8,10 +9,12 @@ from django.core.files.storage import default_storage
 from django.utils.text import get_valid_filename
 
 from app.DTO.MeetingDTO import MeetingImportDTO, MeetingRecordStartDTO
+from app.DTO.meeting_dtos import MeetingListFilterDTO
 from app.Enums.ChatType import ChatType
 from app.Enums.MeetingSourceType import MeetingSourceType
 from app.Enums.MeetingStatus import MeetingStatus
 from app.Exceptions import ApplicationException, NotFoundException, ValidationException
+from app.Helpers.transcript import count_unique_speakers
 from app.Repositories.Contracts.ChatMessageRepository import ChatMessageRepository
 from app.Repositories.Contracts.ChatRepository import ChatRepository
 from app.Repositories.Contracts.MeetingRepository import MeetingRepository
@@ -154,8 +157,28 @@ class MeetingServiceImpl(MeetingService):
             "task_id": task_id,
         }
 
-    def list(self, user_id: int) -> list[dict[str, Any]]:
-        return [self._meeting_to_dict(meeting) for meeting in self.meeting_repository.list_by_user(user_id)]
+    def list(self, user_id: int, filters: MeetingListFilterDTO | None = None) -> list[dict[str, Any]]:
+        filters = filters or MeetingListFilterDTO()
+        start_date = self._parse_filter_date(filters.start_date, "startDate")
+        end_date = self._parse_filter_date(filters.end_date, "endDate")
+        if start_date and end_date and start_date > end_date:
+            raise ValidationException("startDate must be before or equal to endDate")
+
+        meetings = self.meeting_repository.list_by_user(
+            user_id,
+            search=filters.search,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        meetings = list(meetings)
+        speaker_counts = self.message_repository.speaker_counts_by_meeting(
+            user_id,
+            [meeting.id for meeting in meetings],
+        )
+        return [
+            self._meeting_to_dict(meeting, speaker_counts.get(meeting.id, 0))
+            for meeting in meetings
+        ]
 
     def get_detail(self, meeting_id: int, user_id: int) -> dict[str, Any]:
         meeting = self.meeting_repository.find_by_id_for_user(meeting_id, user_id)
@@ -174,13 +197,19 @@ class MeetingServiceImpl(MeetingService):
         )
         transcript_messages = list(self.message_repository.list_by_chat(meeting_chat.id)) if meeting_chat else []
         transcript = "\n\n".join(message.content for message in transcript_messages if message.content)
+        speaker_count = count_unique_speakers(message.content for message in transcript_messages)
 
         return {
-            "meeting": self._meeting_to_dict(meeting),
+            "meeting": self._meeting_to_dict(meeting, speaker_count),
             "meeting_chat": self._chat_to_dict(meeting_chat, transcript=transcript) if meeting_chat else None,
             "general_chat": self._chat_to_dict(general_chat) if general_chat else None,
             "transcript": transcript,
         }
+
+    def delete(self, meeting_id: int, user_id: int) -> bool:
+        if not self.meeting_repository.soft_delete(meeting_id, user_id):
+            raise NotFoundException("Meeting not found")
+        return True
 
     def _validate_upload(self, dto: MeetingImportDTO) -> None:
         if dto.source_file is None:
@@ -189,6 +218,15 @@ class MeetingServiceImpl(MeetingService):
         extension = Path(dto.source_file.name).suffix.lower()
         if extension not in self.ALLOWED_EXTENSIONS:
             raise ValidationException("Unsupported meeting file type")
+
+    @staticmethod
+    def _parse_filter_date(value: str, field_name: str) -> date | None:
+        if not value:
+            return None
+        try:
+            return date.fromisoformat(value)
+        except ValueError as exc:
+            raise ValidationException(f"{field_name} must use YYYY-MM-DD format") from exc
 
     def _store_meeting_file(self, source_file) -> str:
         file_name = get_valid_filename(source_file.name)
@@ -209,7 +247,7 @@ class MeetingServiceImpl(MeetingService):
         )
         return meeting_chat, general_chat
 
-    def _meeting_to_dict(self, meeting) -> dict[str, Any]:
+    def _meeting_to_dict(self, meeting, speaker_count: int = 0) -> dict[str, Any]:
         return {
             "id": meeting.id,
             "user_id": meeting.user_id,
@@ -221,6 +259,7 @@ class MeetingServiceImpl(MeetingService):
             "duration": meeting.duration,
             "language": meeting.language,
             "status": meeting.status,
+            "speaker_count": speaker_count,
             "created_at": meeting.created_at,
         }
 
