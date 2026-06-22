@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any
-
+from typing import Any, List, Dict
 from app.DTO.folder_dtos import FolderCreateDTO, FolderUpdateDTO
 
 
@@ -10,7 +9,7 @@ class FolderService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def list(self, user_id: int) -> list[dict[str, Any]]:
+    def list(self, user_id: int) -> List[Dict[str, Any]]:
         raise NotImplementedError
 
     @abstractmethod
@@ -34,5 +33,5 @@ class FolderService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def list_meetings(self, folder_id: int, user_id: int) -> list[dict[str, Any]]:
+    def list_meetings(self, folder_id: int, user_id: int) -> List[Dict[str, Any]]:
         raise NotImplementedError
