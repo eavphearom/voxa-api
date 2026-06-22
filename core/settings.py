@@ -28,7 +28,12 @@ if not SECRET_KEY:
     raise ImproperlyConfigured("SECRET_KEY must be configured in the environment")
 
 DEBUG = get_bool_env("DEBUG", default=False)
-ALLOWED_HOSTS = get_list_env("DJANGO_ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
+# ALLOWED_HOSTS = get_list_env("DJANGO_ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
+ALLOWED_HOSTS = [
+    "web-production-fc549.up.railway.app",
+    "localhost",
+    "127.0.0.1",
+]
 
 
 DJANGO_APPS = [
