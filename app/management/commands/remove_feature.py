@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Dict, List, Tuple
+
 import re
 from pathlib import Path
 
@@ -66,7 +68,7 @@ class Command(BaseCommand):
             warnings=warnings,
         )
 
-    def _feature_files(self, root: Path, context: dict[str, str]) -> list[Path]:
+    def _feature_files(self, root: Path, context: Dict[str, str]) -> List[Path]:
         class_name = context["class_name"]
         snake_name = context["snake_name"]
         return [
@@ -79,7 +81,7 @@ class Command(BaseCommand):
             root / "Services" / f"{class_name}ServiceImpl.py",
         ]
 
-    def _print_confirmation_summary(self, class_name: str, files: list[Path]) -> None:
+    def _print_confirmation_summary(self, class_name: str, files: List[Path]) -> None:
         self.stdout.write(f"Feature: {class_name}\n")
         self.stdout.write("Files to delete:")
         for path in files:
@@ -93,7 +95,7 @@ class Command(BaseCommand):
         answer = input("Continue? [y/N]: ").strip().lower()
         return answer in {"y", "yes"}
 
-    def _delete_files(self, files: list[Path]) -> tuple[list[Path], list[str]]:
+    def _delete_files(self, files: List[Path]) -> Tuple[List[Path], List[str]]:
         deleted_files = []
         warnings = []
 
@@ -148,7 +150,7 @@ class Command(BaseCommand):
             f"{class_name}Repository",
         )
 
-    def _update_export_file(self, path: Path, import_lines: list[str], export_name: str) -> bool:
+    def _update_export_file(self, path: Path, import_lines: List[str], export_name: str) -> bool:
         if not path.exists():
             return False
 
@@ -193,12 +195,12 @@ class Command(BaseCommand):
             return None
         return f"{class_name}Service -> {class_name}ServiceImpl"
 
-    def _update_route_registrations(self, root: Path, context: dict[str, str]) -> bool:
+    def _update_route_registrations(self, root: Path, context: Dict[str, str]) -> bool:
         updated_user_routes = self._update_user_v1_routes(root, context)
         updated_core_routes = self._update_legacy_core_route_registration(root, context)
         return updated_user_routes or updated_core_routes
 
-    def _update_user_v1_routes(self, root: Path, context: dict[str, str]) -> bool:
+    def _update_user_v1_routes(self, root: Path, context: Dict[str, str]) -> bool:
         class_name = context["class_name"]
         path = root / "Routes" / "user" / "v1.py"
         if not path.exists():
@@ -213,7 +215,7 @@ class Command(BaseCommand):
         path.write_text(content, encoding="utf-8")
         return content != original
 
-    def _update_legacy_core_route_registration(self, root: Path, context: dict[str, str]) -> bool:
+    def _update_legacy_core_route_registration(self, root: Path, context: Dict[str, str]) -> bool:
         core_urls_path = root.parent / "core" / "urls.py"
         if not core_urls_path.exists():
             return False
@@ -261,7 +263,7 @@ class Command(BaseCommand):
 
         return "\n".join(cleaned).rstrip() + "\n"
 
-    def _remove_lines_containing(self, content: str, needles: list[str]) -> str:
+    def _remove_lines_containing(self, content: str, needles: List[str]) -> str:
         lines = [
             line
             for line in content.splitlines()
@@ -269,13 +271,13 @@ class Command(BaseCommand):
         ]
         return "\n".join(lines).rstrip() + "\n"
 
-    def _extract_all_values(self, content: str) -> list[str]:
+    def _extract_all_values(self, content: str) -> List[str]:
         match = re.search(r"__all__\s*=\s*\[(.*?)\]", content, re.DOTALL)
         if not match:
             return []
         return re.findall(r"[\"']([^\"']+)[\"']", match.group(1))
 
-    def _replace_or_append_all(self, content: str, exports: list[str]) -> str:
+    def _replace_or_append_all(self, content: str, exports: List[str]) -> str:
         exports = sorted(dict.fromkeys(exports))
         all_block = "__all__ = [\n" + "".join(f'    "{value}",\n' for value in exports) + "]"
         if re.search(r"__all__\s*=\s*\[.*?\]", content, re.DOTALL):
@@ -284,11 +286,11 @@ class Command(BaseCommand):
 
     def _print_final_report(
         self,
-        deleted_files: list[Path],
-        updated_bindings: list[str],
+        deleted_files: List[Path],
+        updated_bindings: List[str],
         updated_route_registrations: bool,
-        updated_exports: list[str],
-        warnings: list[str],
+        updated_exports: List[str],
+        warnings: List[str],
     ) -> None:
         self.stdout.write(self.style.SUCCESS("\nRemove feature complete."))
 

@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Dict, List, Tuple
+
 import base64
 from io import BytesIO
 from typing import Any
@@ -11,7 +15,7 @@ from app.Services.Contracts.ChatAttachmentContentService import ChatAttachmentCo
 class ChatAttachmentContentServiceImpl(ChatAttachmentContentService):
     TEXT_EXTENSIONS = {".txt", ".md", ".csv", ".json", ".xml", ".html", ".log", ".py", ".js", ".ts", ".css"}
 
-    def build_gemini_input(self, dto: ChatMessageCreateDTO) -> tuple[str, list[dict[str, Any]]]:
+    def build_gemini_input(self, dto: ChatMessageCreateDTO) -> Tuple[str, List[Dict[str, Any]]]:
         prompt = dto.message or "Analyze the attached file."
         text_sections = []
         inline_parts = []
@@ -85,7 +89,7 @@ class ChatAttachmentContentServiceImpl(ChatAttachmentContentService):
                 continue
         return f"{file_name} Content:\nUnable to decode text content."
 
-    def _build_inline_part(self, attachment: ChatMessageAttachmentDTO, file_bytes: bytes) -> dict[str, Any]:
+    def _build_inline_part(self, attachment: ChatMessageAttachmentDTO, file_bytes: bytes) -> Dict[str, Any]:
         return {
             "inline_data": {
                 "mime_type": attachment.content_type,

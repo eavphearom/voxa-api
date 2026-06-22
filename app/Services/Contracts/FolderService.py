@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import Any, List, Dict
 from app.DTO.folder_dtos import FolderCreateDTO, FolderUpdateDTO
@@ -5,7 +7,7 @@ from app.DTO.folder_dtos import FolderCreateDTO, FolderUpdateDTO
 
 class FolderService(ABC):
     @abstractmethod
-    def create(self, user_id: int, dto: FolderCreateDTO) -> dict[str, Any]:
+    def create(self, user_id: int, dto: FolderCreateDTO) -> Dict[str, Any]:
         raise NotImplementedError
 
     @abstractmethod
@@ -13,11 +15,11 @@ class FolderService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_detail(self, folder_id: int, user_id: int) -> dict[str, Any]:
+    def get_detail(self, folder_id: int, user_id: int) -> Dict[str, Any]:
         raise NotImplementedError
 
     @abstractmethod
-    def update(self, folder_id: int, user_id: int, dto: FolderUpdateDTO) -> dict[str, Any]:
+    def update(self, folder_id: int, user_id: int, dto: FolderUpdateDTO) -> Dict[str, Any]:
         raise NotImplementedError
 
     @abstractmethod
@@ -25,7 +27,7 @@ class FolderService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def add_meeting(self, folder_id: int, meeting_id: int, user_id: int) -> dict[str, Any]:
+    def add_meeting(self, folder_id: int, meeting_id: int, user_id: int) -> Dict[str, Any]:
         raise NotImplementedError
 
     @abstractmethod

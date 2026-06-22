@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Dict, List
+
 import json
 import logging
 import time
@@ -37,8 +41,8 @@ print("Hello World")
     def generate_response(
         self,
         message: str,
-        history: list[dict[str, Any]] | None = None,
-        attachment_parts: list[dict[str, Any]] | None = None,
+        history: List[Dict[str, Any]] | None = None,
+        attachment_parts: List[Dict[str, Any]] | None = None,
     ) -> str:
         if not settings.GEMINI_API_KEY:
             raise ApplicationException("GEMINI_API_KEY is not configured")
@@ -47,7 +51,7 @@ print("Hello World")
         response_data = self._request_available_model(payload)
         return self._extract_text(response_data)
 
-    def _request_available_model(self, payload: dict[str, Any]) -> dict[str, Any]:
+    def _request_available_model(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         models = [settings.GEMINI_MODEL, *settings.GEMINI_FALLBACK_MODELS]
         last_error = "Gemini API request failed"
         for model in dict.fromkeys(models):
@@ -59,7 +63,7 @@ print("Hello World")
 
         raise ApplicationException(last_error)
 
-    def _request_with_retries(self, model: str, payload: dict[str, Any]) -> dict[str, Any]:
+    def _request_with_retries(self, model: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         last_error = "Gemini API request failed"
         for attempt in range(len(self.RETRY_DELAYS_SECONDS) + 1):
             try:
@@ -81,7 +85,7 @@ print("Hello World")
 
         raise ApplicationException(last_error)
 
-    def _request_model(self, model: str, payload: dict[str, Any]) -> dict[str, Any]:
+    def _request_model(self, model: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         url = (
             f"https://generativelanguage.googleapis.com/v1beta/models/"
             f"{model}:generateContent?key={settings.GEMINI_API_KEY}"
@@ -111,9 +115,9 @@ print("Hello World")
     def _build_payload(
         self,
         message: str,
-        history: list[dict[str, Any]],
-        attachment_parts: list[dict[str, Any]],
-    ) -> dict[str, Any]:
+        history: List[Dict[str, Any]],
+        attachment_parts: List[Dict[str, Any]],
+    ) -> Dict[str, Any]:
         contents = []
         for item in history[-20:]:
             role = "model" if item.get("role") == "assistant" else "user"
@@ -144,7 +148,7 @@ print("Hello World")
             "contents": contents,
         }
 
-    def _extract_text(self, response_data: dict[str, Any]) -> str:
+    def _extract_text(self, response_data: Dict[str, Any]) -> str:
         candidates = response_data.get("candidates", [])
         if not candidates:
             raise ApplicationException("Gemini API returned no response")

@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Dict, List
+
 from typing import Any
 
 from app.DTO.ChatMessageDTO import ChatMessageDTO
@@ -10,19 +14,19 @@ class ChatMessageServiceImpl(ChatMessageService):
     def __init__(self, repository: ChatMessageRepository) -> None:
         self.repository = repository
 
-    def get_all(self) -> list[dict[str, Any]]:
+    def get_all(self) -> List[Dict[str, Any]]:
         return [self._to_dict(item) for item in self.repository.get_all()]
 
-    def get_by_id(self, object_id: int) -> dict[str, Any]:
+    def get_by_id(self, object_id: int) -> Dict[str, Any]:
         instance = self.repository.get_by_id(object_id)
         if instance is None:
             raise NotFoundException("ChatMessage not found")
         return self._to_dict(instance)
 
-    def create(self, dto: ChatMessageDTO) -> dict[str, Any]:
+    def create(self, dto: ChatMessageDTO) -> Dict[str, Any]:
         return self._to_dict(self.repository.create(dto.to_dict()))
 
-    def update(self, object_id: int, dto: ChatMessageDTO) -> dict[str, Any]:
+    def update(self, object_id: int, dto: ChatMessageDTO) -> Dict[str, Any]:
         instance = self.repository.update(object_id, dto.to_dict())
         if instance is None:
             raise NotFoundException("ChatMessage not found")
@@ -34,7 +38,7 @@ class ChatMessageServiceImpl(ChatMessageService):
             raise NotFoundException("ChatMessage not found")
         return True
 
-    def _to_dict(self, instance) -> dict[str, Any]:
+    def _to_dict(self, instance) -> Dict[str, Any]:
         return {
             "id": instance.id,
             "chat_id": instance.chat_id,

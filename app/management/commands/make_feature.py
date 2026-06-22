@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Dict, List
+
 import re
 from pathlib import Path
 
@@ -34,7 +36,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"{class_name} feature generated successfully."))
 
-    def _create_feature_files(self, root: Path, context: dict[str, str]) -> None:
+    def _create_feature_files(self, root: Path, context: Dict[str, str]) -> None:
         class_name = context["class_name"]
         snake_name = context["snake_name"]
         files = {
@@ -97,7 +99,7 @@ class Command(BaseCommand):
             exports.append(export_name)
         path.write_text(self._replace_or_append_all(content, exports), encoding="utf-8")
 
-    def _update_repository_bindings(self, root: Path, context: dict[str, str]) -> None:
+    def _update_repository_bindings(self, root: Path, context: Dict[str, str]) -> None:
         class_name = context["class_name"]
         path = root / "config" / "binding" / "repositories.py"
         content = path.read_text(encoding="utf-8")
@@ -111,7 +113,7 @@ class Command(BaseCommand):
             encoding="utf-8",
         )
 
-    def _update_service_bindings(self, root: Path, context: dict[str, str]) -> None:
+    def _update_service_bindings(self, root: Path, context: Dict[str, str]) -> None:
         class_name = context["class_name"]
         path = root / "config" / "binding" / "services.py"
         content = path.read_text(encoding="utf-8")
@@ -129,7 +131,7 @@ class Command(BaseCommand):
             encoding="utf-8",
         )
 
-    def _update_user_v1_routes(self, root: Path, context: dict[str, str]) -> None:
+    def _update_user_v1_routes(self, root: Path, context: Dict[str, str]) -> None:
         class_name = context["class_name"]
         plural = context["plural_snake_name"]
         path = root / "Routes" / "user" / "v1.py"
@@ -159,7 +161,7 @@ class Command(BaseCommand):
 
         path.write_text(content, encoding="utf-8")
 
-    def _append_urlpatterns_block(self, content: str, route_block: list[str]) -> str:
+    def _append_urlpatterns_block(self, content: str, route_block: List[str]) -> str:
         if "urlpatterns" not in content:
             content = self._append_line(content, "urlpatterns = []")
 
@@ -172,7 +174,7 @@ class Command(BaseCommand):
         suffix = content[closing_index:]
         return f"{prefix}\n{block}\n{suffix.lstrip()}"
 
-    def _append_imports_and_binding(self, content: str, imports: list[str], binding: str) -> str:
+    def _append_imports_and_binding(self, content: str, imports: List[str], binding: str) -> str:
         for import_line in imports:
             if import_line not in content:
                 content = self._prepend_import(content, import_line)
@@ -184,7 +186,7 @@ class Command(BaseCommand):
         self,
         content: str,
         dict_name: str,
-        imports: list[str],
+        imports: List[str],
         binding: str,
     ) -> str:
         for import_line in imports:
@@ -220,13 +222,13 @@ class Command(BaseCommand):
             return f"{line}\n"
         return f"{content}\n{line}\n"
 
-    def _extract_all_values(self, content: str) -> list[str]:
+    def _extract_all_values(self, content: str) -> List[str]:
         match = re.search(r"__all__\s*=\s*\[(.*?)\]", content, re.DOTALL)
         if not match:
             return []
         return re.findall(r"[\"']([^\"']+)[\"']", match.group(1))
 
-    def _replace_or_append_all(self, content: str, exports: list[str]) -> str:
+    def _replace_or_append_all(self, content: str, exports: List[str]) -> str:
         exports = sorted(dict.fromkeys(exports))
         all_block = "__all__ = [\n" + "".join(f'    "{value}",\n' for value in exports) + "]"
         if re.search(r"__all__\s*=\s*\[.*?\]", content, re.DOTALL):
@@ -240,7 +242,7 @@ class Command(BaseCommand):
     def _to_snake_case(self, value: str) -> str:
         return re.sub(r"(?<!^)(?=[A-Z])", "_", value).lower()
 
-    def _controller_template(self, context: dict[str, str]) -> str:
+    def _controller_template(self, context: Dict[str, str]) -> str:
         class_name = context["class_name"]
         return f'''from rest_framework import status
 from rest_framework.response import Response
@@ -289,25 +291,25 @@ class {class_name}Controller(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 '''
 
-    def _dto_template(self, context: dict[str, str]) -> str:
+    def _dto_template(self, context: Dict[str, str]) -> str:
         class_name = context["class_name"]
         return f'''from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Dict
 
 
 @dataclass(frozen=True, slots=True)
 class {class_name}DTO:
-    payload: dict[str, Any] = field(default_factory=dict)
+    payload: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_request(cls, data) -> "{class_name}DTO":
         return cls(payload=dict(data))
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> Dict[str, Any]:
         return self.payload
 '''
 
-    def _model_template(self, context: dict[str, str]) -> str:
+    def _model_template(self, context: Dict[str, str]) -> str:
         class_name = context["class_name"]
         return f'''from django.db import models
 
@@ -325,7 +327,7 @@ class {class_name}(models.Model):
         return self.name
 '''
 
-    def _repository_contract_template(self, context: dict[str, str]) -> str:
+    def _repository_contract_template(self, context: Dict[str, str]) -> str:
         class_name = context["class_name"]
         return f'''from app.Repositories.BaseRepository import BaseRepository
 
@@ -334,7 +336,7 @@ class {class_name}Repository(BaseRepository):
     pass
 '''
 
-    def _repository_impl_template(self, context: dict[str, str]) -> str:
+    def _repository_impl_template(self, context: Dict[str, str]) -> str:
         class_name = context["class_name"]
         return f'''from app.model import {class_name}
 from app.Repositories.BaseRepositoryImpl import BaseRepositoryImpl
@@ -345,29 +347,29 @@ class {class_name}RepositoryImpl(BaseRepositoryImpl, {class_name}Repository):
     model = {class_name}
 '''
 
-    def _service_contract_template(self, context: dict[str, str]) -> str:
+    def _service_contract_template(self, context: Dict[str, str]) -> str:
         class_name = context["class_name"]
         return f'''from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Dict, List
 
 from app.DTO.{class_name}DTO import {class_name}DTO
 
 
 class {class_name}Service(ABC):
     @abstractmethod
-    def get_all(self) -> list[dict[str, Any]]:
+    def get_all(self) -> List[Dict[str, Any]]:
         raise NotImplementedError
 
     @abstractmethod
-    def get_by_id(self, object_id: int) -> dict[str, Any]:
+    def get_by_id(self, object_id: int) -> Dict[str, Any]:
         raise NotImplementedError
 
     @abstractmethod
-    def create(self, dto: {class_name}DTO) -> dict[str, Any]:
+    def create(self, dto: {class_name}DTO) -> Dict[str, Any]:
         raise NotImplementedError
 
     @abstractmethod
-    def update(self, object_id: int, dto: {class_name}DTO) -> dict[str, Any]:
+    def update(self, object_id: int, dto: {class_name}DTO) -> Dict[str, Any]:
         raise NotImplementedError
 
     @abstractmethod
@@ -375,9 +377,9 @@ class {class_name}Service(ABC):
         raise NotImplementedError
 '''
 
-    def _service_impl_template(self, context: dict[str, str]) -> str:
+    def _service_impl_template(self, context: Dict[str, str]) -> str:
         class_name = context["class_name"]
-        return f'''from typing import Any
+        return f'''from typing import Any, Dict, List
 
 from app.DTO.{class_name}DTO import {class_name}DTO
 from app.Exceptions import NotFoundException
@@ -389,19 +391,19 @@ class {class_name}ServiceImpl({class_name}Service):
     def __init__(self, repository: {class_name}Repository) -> None:
         self.repository = repository
 
-    def get_all(self) -> list[dict[str, Any]]:
+    def get_all(self) -> List[Dict[str, Any]]:
         return [self._to_dict(item) for item in self.repository.get_all()]
 
-    def get_by_id(self, object_id: int) -> dict[str, Any]:
+    def get_by_id(self, object_id: int) -> Dict[str, Any]:
         instance = self.repository.get_by_id(object_id)
         if instance is None:
             raise NotFoundException("{class_name} not found")
         return self._to_dict(instance)
 
-    def create(self, dto: {class_name}DTO) -> dict[str, Any]:
+    def create(self, dto: {class_name}DTO) -> Dict[str, Any]:
         return self._to_dict(self.repository.create(dto.to_dict()))
 
-    def update(self, object_id: int, dto: {class_name}DTO) -> dict[str, Any]:
+    def update(self, object_id: int, dto: {class_name}DTO) -> Dict[str, Any]:
         instance = self.repository.update(object_id, dto.to_dict())
         if instance is None:
             raise NotFoundException("{class_name} not found")
@@ -413,7 +415,7 @@ class {class_name}ServiceImpl({class_name}Service):
             raise NotFoundException("{class_name} not found")
         return True
 
-    def _to_dict(self, instance) -> dict[str, Any]:
+    def _to_dict(self, instance) -> Dict[str, Any]:
         return {{
             "id": instance.id,
             "name": instance.name,

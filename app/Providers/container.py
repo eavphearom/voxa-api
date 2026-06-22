@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Dict
+
 from collections.abc import Callable
 from typing import Any, TypeVar
 
@@ -7,7 +11,7 @@ DependencyT = TypeVar("DependencyT")
 
 class Container:
     def __init__(self) -> None:
-        self._factories: dict[type[Any], Callable[[], Any]] = {}
+        self._factories: Dict[type[Any], Callable[[], Any]] = {}
 
     def register(
         self,

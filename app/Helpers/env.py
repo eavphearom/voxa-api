@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import List
+
 import os
 from pathlib import Path
 
@@ -21,7 +25,7 @@ def get_bool_env(name: str, default: bool = False) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
-def get_list_env(name: str, default: list[str] | None = None) -> list[str]:
+def get_list_env(name: str, default: List[str] | None = None) -> List[str]:
     value = os.getenv(name)
     if not value:
         return default or []

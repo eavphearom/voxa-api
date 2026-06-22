@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Dict, List
+
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -9,17 +13,17 @@ class ChatMessageAttachmentService(ABC):
     def create_many(
         self,
         chat_message_id: int,
-        attachments: list[ChatMessageAttachmentDTO],
+        attachments: List[ChatMessageAttachmentDTO],
         user_id: int | None = None,
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         raise NotImplementedError
 
     @abstractmethod
-    def list_by_message(self, chat_message_id: int) -> list[dict[str, Any]]:
+    def list_by_message(self, chat_message_id: int) -> List[Dict[str, Any]]:
         raise NotImplementedError
 
     @abstractmethod
-    def group_by_message_ids(self, chat_message_ids: list[int]) -> dict[int, list[dict[str, Any]]]:
+    def group_by_message_ids(self, chat_message_ids: List[int]) -> Dict[int, List[Dict[str, Any]]]:
         raise NotImplementedError
 
     @abstractmethod

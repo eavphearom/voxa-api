@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import List
+
 from django.utils import timezone
 
 from app.model import ChatMessageAttachment
@@ -36,7 +40,7 @@ class ChatMessageAttachmentRepositoryImpl(BaseRepositoryImpl, ChatMessageAttachm
             is_deleted=False,
         ).order_by("created_at", "id")
 
-    def list_by_messages(self, chat_message_ids: list[int]):
+    def list_by_messages(self, chat_message_ids: List[int]):
         return ChatMessageAttachment.objects.filter(
             chat_message_id__in=chat_message_ids,
             is_deleted=False,

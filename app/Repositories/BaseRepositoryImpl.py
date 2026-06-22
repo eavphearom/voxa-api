@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Dict
+
 from typing import Any
 
 from django.core.paginator import Paginator
@@ -19,10 +23,10 @@ class BaseRepositoryImpl(BaseRepository):
     def get_by_id(self, object_id: int):
         return self.get_model().objects.filter(id=object_id).first()
 
-    def create(self, data: dict[str, Any]):
+    def create(self, data: Dict[str, Any]):
         return self.get_model().objects.create(**data)
 
-    def update(self, object_id: int, data: dict[str, Any]):
+    def update(self, object_id: int, data: Dict[str, Any]):
         instance = self.get_by_id(object_id)
         if instance is None:
             return None
