@@ -1,4 +1,4 @@
-from typing import Any
+from typing import List, Dict, Any
 
 from app.DTO.folder_dtos import FolderCreateDTO, FolderUpdateDTO
 from app.Exceptions import NotFoundException, ValidationException
@@ -16,7 +16,7 @@ class FolderServiceImpl(FolderService):
         self._validate_name(dto.name)
         return self._folder_to_dict(self.folder_repository.create_for_user(user_id, dto.name))
 
-    def list(self, user_id: int) -> list[dict[str, Any]]:
+    def list(self, user_id: int) -> List[Dict[str, Any]]:
         return [self._folder_to_dict(folder) for folder in self.folder_repository.list_by_user(user_id)]
 
     def get_detail(self, folder_id: int, user_id: int) -> dict[str, Any]:
@@ -52,7 +52,7 @@ class FolderServiceImpl(FolderService):
             raise NotFoundException("Meeting is not in this folder")
         return True
 
-    def list_meetings(self, folder_id: int, user_id: int) -> list[dict[str, Any]]:
+    def list_meetings(self, folder_id: int, user_id: int) -> List[Dict[str, Any]]:
         self._get_owned_folder(folder_id, user_id)
         return [self._meeting_to_dict(meeting) for meeting in self.folder_repository.list_meetings(folder_id)]
 
