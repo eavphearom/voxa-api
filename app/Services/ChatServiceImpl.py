@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import logging
-from typing import Any
+from typing import Any, Dict, List
 
 from app.DTO.ChatDTO import ChatCreateDTO, ChatMessageCreateDTO, ChatUpdateDTO
 from app.Enums.ChatRole import ChatRole
@@ -31,14 +33,14 @@ class ChatServiceImpl(ChatService):
         self.attachment_content_service = attachment_content_service
         self.gemini_service = gemini_service
 
-    def create(self, user_id: int, dto: ChatCreateDTO) -> dict[str, Any]:
+    def create(self, user_id: int, dto: ChatCreateDTO) -> Dict[str, Any]:
         chat = self.chat_repository.create_for_user(user_id=user_id, title=dto.title)
         return self._chat_to_dict(chat)
 
-    def list(self, user_id: int) -> list[dict[str, Any]]:
+    def list(self, user_id: int) -> List[Dict[str, Any]]:
         return [self._chat_to_dict(chat) for chat in self.chat_repository.list_by_user(user_id)]
 
-    def get_detail(self, chat_id: int, user_id: int) -> dict[str, Any]:
+    def get_detail(self, chat_id: int, user_id: int) -> Dict[str, Any]:
         chat = self._get_owned_chat(chat_id, user_id)
         messages = list(self.message_repository.list_by_chat(chat.id))
         attachments_by_message = self.attachment_service.group_by_message_ids(
@@ -52,7 +54,7 @@ class ChatServiceImpl(ChatService):
             ],
         }
 
-    def get_message_detail(self, chat_id: int, user_id: int, message_id: int) -> dict[str, Any]:
+    def get_message_detail(self, chat_id: int, user_id: int, message_id: int) -> Dict[str, Any]:
         chat = self._get_owned_chat(chat_id, user_id)
         message = self.message_repository.find_by_id_for_chat(message_id, chat.id)
         if message is None:
@@ -60,7 +62,7 @@ class ChatServiceImpl(ChatService):
         attachments = self.attachment_service.list_by_message(message.id)
         return self._message_to_dict(message, attachments)
 
-    def update(self, chat_id: int, user_id: int, dto: ChatUpdateDTO) -> dict[str, Any]:
+    def update(self, chat_id: int, user_id: int, dto: ChatUpdateDTO) -> Dict[str, Any]:
         if not dto.title:
             raise ValidationException("Title is required")
 
@@ -75,7 +77,7 @@ class ChatServiceImpl(ChatService):
             raise NotFoundException("Chat not found")
         return True
 
-    def send_message(self, chat_id: int, user_id: int, dto: ChatMessageCreateDTO) -> dict[str, Any]:
+    def send_message(self, chat_id: int, user_id: int, dto: ChatMessageCreateDTO) -> Dict[str, Any]:
         if not dto.message and not dto.attachments:
             raise ValidationException("Message or attachments is required")
 
@@ -152,13 +154,13 @@ class ChatServiceImpl(ChatService):
             raise NotFoundException("Chat not found")
         return chat
 
-    def _chat_to_dict(self, chat) -> dict[str, Any]:
+    def _chat_to_dict(self, chat) -> Dict[str, Any]:
         return {
             "id": chat.id,
             "title": chat.title,
         }
 
-    def _message_to_dict(self, message, attachments: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    def _message_to_dict(self, message, attachments: List[Dict[str, Any]] | None = None) -> Dict[str, Any]:
         return {
             "id": message.id,
             "chat_id": message.chat_id,

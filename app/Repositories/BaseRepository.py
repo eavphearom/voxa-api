@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Dict
+
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -12,11 +16,11 @@ class BaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def create(self, data: dict[str, Any]):
+    def create(self, data: Dict[str, Any]):
         raise NotImplementedError
 
     @abstractmethod
-    def update(self, object_id: int, data: dict[str, Any]):
+    def update(self, object_id: int, data: Dict[str, Any]):
         raise NotImplementedError
 
     @abstractmethod

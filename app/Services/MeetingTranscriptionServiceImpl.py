@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Dict
+
 import logging
 
 from django.conf import settings
@@ -109,7 +113,7 @@ class MeetingTranscriptionServiceImpl(MeetingTranscriptionService):
         return self.__class__._model
 
     def _format_speaker_transcript(self, segments, speaker_turns) -> str:
-        labels: dict[str, str] = {}
+        labels: Dict[str, str] = {}
         lines = []
         previous_label = None
 

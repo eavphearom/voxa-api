@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import List
+
 from dataclasses import dataclass
 
 from app.DTO.ChatMessageAttachmentDTO import ChatMessageAttachmentDTO
@@ -24,7 +28,7 @@ class ChatUpdateDTO:
 @dataclass(frozen=True, slots=True)
 class ChatMessageCreateDTO:
     message: str
-    attachments: list[ChatMessageAttachmentDTO]
+    attachments: List[ChatMessageAttachmentDTO]
 
     @classmethod
     def from_request(cls, data, files=None) -> "ChatMessageCreateDTO":

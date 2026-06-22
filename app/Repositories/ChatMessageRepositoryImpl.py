@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Dict, List
+
 from app.Enums.ChatType import ChatType
 from app.Helpers.transcript import count_unique_speakers
 from app.model import Chat, ChatMessage
@@ -32,7 +36,7 @@ class ChatMessageRepositoryImpl(BaseRepositoryImpl, ChatMessageRepository):
     def list_by_chat(self, chat_id: int):
         return ChatMessage.objects.filter(chat_id=chat_id, is_deleted=False).order_by("created_at", "id")
 
-    def speaker_counts_by_meeting(self, user_id: int, meeting_ids: list[int]) -> dict[int, int]:
+    def speaker_counts_by_meeting(self, user_id: int, meeting_ids: List[int]) -> Dict[int, int]:
         if not meeting_ids:
             return {}
 

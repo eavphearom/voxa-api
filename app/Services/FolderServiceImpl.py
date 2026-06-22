@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List, Dict, Any
 
 from app.DTO.folder_dtos import FolderCreateDTO, FolderUpdateDTO
@@ -12,21 +14,21 @@ class FolderServiceImpl(FolderService):
         self.folder_repository = folder_repository
         self.meeting_repository = meeting_repository
 
-    def create(self, user_id: int, dto: FolderCreateDTO) -> dict[str, Any]:
+    def create(self, user_id: int, dto: FolderCreateDTO) -> Dict[str, Any]:
         self._validate_name(dto.name)
         return self._folder_to_dict(self.folder_repository.create_for_user(user_id, dto.name))
 
     def list(self, user_id: int) -> List[Dict[str, Any]]:
         return [self._folder_to_dict(folder) for folder in self.folder_repository.list_by_user(user_id)]
 
-    def get_detail(self, folder_id: int, user_id: int) -> dict[str, Any]:
+    def get_detail(self, folder_id: int, user_id: int) -> Dict[str, Any]:
         folder = self._get_owned_folder(folder_id, user_id)
         return {
             **self._folder_to_dict(folder),
             "meetings": self.list_meetings(folder.id, user_id),
         }
 
-    def update(self, folder_id: int, user_id: int, dto: FolderUpdateDTO) -> dict[str, Any]:
+    def update(self, folder_id: int, user_id: int, dto: FolderUpdateDTO) -> Dict[str, Any]:
         self._validate_name(dto.name)
         folder = self.folder_repository.update_for_user(folder_id, user_id, dto.name)
         if folder is None:
@@ -38,7 +40,7 @@ class FolderServiceImpl(FolderService):
             raise NotFoundException("Folder not found")
         return True
 
-    def add_meeting(self, folder_id: int, meeting_id: int, user_id: int) -> dict[str, Any]:
+    def add_meeting(self, folder_id: int, meeting_id: int, user_id: int) -> Dict[str, Any]:
         self._get_owned_folder(folder_id, user_id)
         meeting = self.meeting_repository.find_by_id_for_user(meeting_id, user_id)
         if meeting is None:
@@ -68,10 +70,10 @@ class FolderServiceImpl(FolderService):
         if len(name) > 255:
             raise ValidationException("Folder name must not exceed 255 characters")
 
-    def _folder_to_dict(self, folder) -> dict[str, Any]:
+    def _folder_to_dict(self, folder) -> Dict[str, Any]:
         return {"id": folder.id, "name": folder.name, "user_id": folder.user_id}
 
-    def _meeting_to_dict(self, meeting) -> dict[str, Any]:
+    def _meeting_to_dict(self, meeting) -> Dict[str, Any]:
         return {
             "id": meeting.id,
             "title": meeting.title,

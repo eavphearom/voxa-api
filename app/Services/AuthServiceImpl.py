@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Dict
+
 import re
 from typing import Any
 
@@ -25,7 +29,7 @@ class AuthServiceImpl(AuthService):
     def __init__(self, user_repository: UserRepository) -> None:
         self.user_repository = user_repository
 
-    def register(self, dto: RegisterDTO) -> dict[str, Any]:
+    def register(self, dto: RegisterDTO) -> Dict[str, Any]:
         self._validate_register_data(dto)
 
         try:
@@ -51,7 +55,7 @@ class AuthServiceImpl(AuthService):
             "profile": created_user.avatar or "",
         }
 
-    def login(self, dto: LoginDTO) -> dict[str, Any]:
+    def login(self, dto: LoginDTO) -> Dict[str, Any]:
         self._validate_login_data(dto)
         user = self.user_repository.find_by_email(dto.email.strip().lower())
 
@@ -68,7 +72,7 @@ class AuthServiceImpl(AuthService):
             "profile": user.avatar or "",
         }
 
-    def google_login(self, dto: GoogleLoginDTO) -> dict[str, Any]:
+    def google_login(self, dto: GoogleLoginDTO) -> Dict[str, Any]:
         if not dto.id_token or not dto.id_token.strip():
             raise ValidationException("Google ID token is required")
         if not settings.GOOGLE_CLIENT_ID:

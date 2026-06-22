@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import List
+
 import logging
 
 import numpy as np
@@ -14,7 +18,7 @@ logger = logging.getLogger(__name__)
 class SpeakerDiarizationServiceImpl(SpeakerDiarizationService):
     SAMPLE_RATE = 16000
 
-    def diarize(self, file_path: str) -> list[SpeakerTurnDTO]:
+    def diarize(self, file_path: str) -> List[SpeakerTurnDTO]:
         if not settings.PYANNOTE_AUTH_TOKEN:
             logger.warning("PYANNOTE_AUTH_TOKEN is not configured; using single-speaker transcript")
             return []

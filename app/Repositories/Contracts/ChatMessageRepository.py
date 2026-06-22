@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Dict, List
+
 from abc import ABC, abstractmethod
 
 from app.model import ChatMessage
@@ -20,7 +24,7 @@ class ChatMessageRepository(BaseRepository, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def speaker_counts_by_meeting(self, user_id: int, meeting_ids: list[int]) -> dict[int, int]:
+    def speaker_counts_by_meeting(self, user_id: int, meeting_ids: List[int]) -> Dict[int, int]:
         raise NotImplementedError
 
     @abstractmethod

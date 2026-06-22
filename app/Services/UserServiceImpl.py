@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Dict
+
 import re
 from pathlib import Path
 from typing import Any
@@ -19,13 +23,13 @@ class UserServiceImpl(UserService):
     def __init__(self, user_repository: UserRepository) -> None:
         self.user_repository = user_repository
 
-    def get_profile(self, user_id: int) -> dict[str, Any]:
+    def get_profile(self, user_id: int) -> Dict[str, Any]:
         user = self.user_repository.find_by_id(user_id)
         if user is None:
             raise NotFoundException("User not found")
         return self._to_dict(user)
 
-    def update_profile(self, user_id: int, dto: UserUpdateDTO) -> dict[str, Any]:
+    def update_profile(self, user_id: int, dto: UserUpdateDTO) -> Dict[str, Any]:
         user = self.user_repository.find_by_id(user_id)
         if user is None:
             raise NotFoundException("User not found")
@@ -38,7 +42,7 @@ class UserServiceImpl(UserService):
         return self._to_dict(user)
 
     @staticmethod
-    def _to_dict(user) -> dict[str, Any]:
+    def _to_dict(user) -> Dict[str, Any]:
         return {
             "id": user.id,
             "name": user.name,
@@ -50,8 +54,8 @@ class UserServiceImpl(UserService):
             "profile": user.avatar or "",
         }
 
-    def _validate_update_data(self, user_id: int, dto: UserUpdateDTO) -> dict[str, Any]:
-        update_data: dict[str, Any] = {}
+    def _validate_update_data(self, user_id: int, dto: UserUpdateDTO) -> Dict[str, Any]:
+        update_data: Dict[str, Any] = {}
 
         if dto.name is not None:
             if not dto.name:

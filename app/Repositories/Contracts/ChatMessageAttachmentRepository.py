@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import List
+
 from abc import ABC, abstractmethod
 
 from app.model import ChatMessageAttachment
@@ -19,7 +23,7 @@ class ChatMessageAttachmentRepository(BaseRepository, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def list_by_messages(self, chat_message_ids: list[int]):
+    def list_by_messages(self, chat_message_ids: List[int]):
         raise NotImplementedError
 
     @abstractmethod

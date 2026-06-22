@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from app.model import User
 from app.Repositories.Contracts.UserRepository import UserRepository
 

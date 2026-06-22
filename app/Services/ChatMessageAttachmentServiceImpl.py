@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Dict, List
+
 from typing import Any
 
 from django.core.files.storage import default_storage
@@ -16,9 +20,9 @@ class ChatMessageAttachmentServiceImpl(ChatMessageAttachmentService):
     def create_many(
         self,
         chat_message_id: int,
-        attachments: list[ChatMessageAttachmentDTO],
+        attachments: List[ChatMessageAttachmentDTO],
         user_id: int | None = None,
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         created = [
             self.repository.create_for_message(
                 chat_message_id=chat_message_id,
@@ -29,14 +33,14 @@ class ChatMessageAttachmentServiceImpl(ChatMessageAttachmentService):
         ]
         return [self._to_dict(attachment) for attachment in created]
 
-    def list_by_message(self, chat_message_id: int) -> list[dict[str, Any]]:
+    def list_by_message(self, chat_message_id: int) -> List[Dict[str, Any]]:
         return [
             self._to_dict(attachment)
             for attachment in self.repository.list_by_message(chat_message_id)
         ]
 
-    def group_by_message_ids(self, chat_message_ids: list[int]) -> dict[int, list[dict[str, Any]]]:
-        grouped: dict[int, list[dict[str, Any]]] = {}
+    def group_by_message_ids(self, chat_message_ids: List[int]) -> Dict[int, List[Dict[str, Any]]]:
+        grouped: Dict[int, List[Dict[str, Any]]] = {}
         if not chat_message_ids:
             return grouped
 
@@ -50,7 +54,7 @@ class ChatMessageAttachmentServiceImpl(ChatMessageAttachmentService):
             raise NotFoundException("Attachment not found")
         return True
 
-    def _to_dict(self, attachment) -> dict[str, Any]:
+    def _to_dict(self, attachment) -> Dict[str, Any]:
         return {
             "id": attachment.id,
             "chat_message_id": attachment.chat_message_id,
@@ -64,7 +68,7 @@ class ChatMessageAttachmentServiceImpl(ChatMessageAttachmentService):
         self,
         chat_message_id: int,
         attachment: ChatMessageAttachmentDTO,
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         file_name = get_valid_filename(attachment.file_name)
         storage_path = default_storage.save(
             f"chat_messages/{chat_message_id}/{file_name}",

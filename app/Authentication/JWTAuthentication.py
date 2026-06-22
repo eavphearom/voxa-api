@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # from django.utils.translation import gettext_lazy as _
 # from rest_framework_simplejwt.authentication import JWTAuthentication
 # from rest_framework_simplejwt.exceptions import AuthenticationFailed, InvalidToken

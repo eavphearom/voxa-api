@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import logging
 import os
 import tempfile
 from datetime import date
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 from django.core.files.storage import default_storage
 from django.utils.text import get_valid_filename
@@ -44,7 +46,7 @@ class MeetingServiceImpl(MeetingService):
         self.job_service = job_service
         self.transcription_service = transcription_service
 
-    def import_meeting(self, user_id: int, dto: MeetingImportDTO) -> dict[str, Any]:
+    def import_meeting(self, user_id: int, dto: MeetingImportDTO) -> Dict[str, Any]:
         self._validate_upload(dto)
         storage_path = self._store_meeting_file(dto.source_file)
 
@@ -83,7 +85,7 @@ class MeetingServiceImpl(MeetingService):
             "task_id": task_id,
         }
 
-    def start_recording(self, user_id: int, dto: MeetingRecordStartDTO) -> dict[str, Any]:
+    def start_recording(self, user_id: int, dto: MeetingRecordStartDTO) -> Dict[str, Any]:
         meeting = self.meeting_repository.create_upload(
             {
                 "user_id": user_id,
@@ -106,7 +108,7 @@ class MeetingServiceImpl(MeetingService):
             "general_chat": self._chat_to_dict(general_chat),
         }
 
-    def transcribe_recording_chunk(self, meeting_id: int, user_id: int, chunk) -> dict[str, Any]:
+    def transcribe_recording_chunk(self, meeting_id: int, user_id: int, chunk) -> Dict[str, Any]:
         meeting = self.meeting_repository.find_by_id_for_user(meeting_id, user_id)
         if meeting is None:
             raise NotFoundException("Meeting not found")
@@ -129,7 +131,7 @@ class MeetingServiceImpl(MeetingService):
             if temporary_path and os.path.exists(temporary_path):
                 os.unlink(temporary_path)
 
-    def finish_recording(self, meeting_id: int, user_id: int, source_file) -> dict[str, Any]:
+    def finish_recording(self, meeting_id: int, user_id: int, source_file) -> Dict[str, Any]:
         meeting = self.meeting_repository.find_by_id_for_user(meeting_id, user_id)
         if meeting is None:
             raise NotFoundException("Meeting not found")
@@ -157,7 +159,11 @@ class MeetingServiceImpl(MeetingService):
             "task_id": task_id,
         }
 
-    def list(self, user_id: int, filters: MeetingListFilterDTO | None = None) -> list[dict[str, Any]]:
+    def list(
+        self,
+        user_id: int,
+        filters: Optional[MeetingListFilterDTO] = None,
+    ) -> List[Dict[str, Any]]:
         filters = filters or MeetingListFilterDTO()
         start_date = self._parse_filter_date(filters.start_date, "startDate")
         end_date = self._parse_filter_date(filters.end_date, "endDate")
@@ -180,7 +186,7 @@ class MeetingServiceImpl(MeetingService):
             for meeting in meetings
         ]
 
-    def get_detail(self, meeting_id: int, user_id: int) -> dict[str, Any]:
+    def get_detail(self, meeting_id: int, user_id: int) -> Dict[str, Any]:
         meeting = self.meeting_repository.find_by_id_for_user(meeting_id, user_id)
         if meeting is None:
             raise NotFoundException("Meeting not found")
@@ -247,7 +253,7 @@ class MeetingServiceImpl(MeetingService):
         )
         return meeting_chat, general_chat
 
-    def _meeting_to_dict(self, meeting, speaker_count: int = 0) -> dict[str, Any]:
+    def _meeting_to_dict(self, meeting, speaker_count: int = 0) -> Dict[str, Any]:
         return {
             "id": meeting.id,
             "user_id": meeting.user_id,
@@ -263,7 +269,7 @@ class MeetingServiceImpl(MeetingService):
             "created_at": meeting.created_at,
         }
 
-    def _chat_to_dict(self, chat, transcript: str | None = None) -> dict[str, Any]:
+    def _chat_to_dict(self, chat, transcript: str | None = None) -> Dict[str, Any]:
         data = {
             "id": chat.id,
             "user_id": chat.user_id,
