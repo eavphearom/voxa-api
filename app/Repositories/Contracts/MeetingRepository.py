@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import date
 
 from app.model import Meeting
 
@@ -13,7 +14,13 @@ class MeetingRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def list_by_user(self, user_id: int):
+    def list_by_user(
+        self,
+        user_id: int,
+        search: str = "",
+        start_date: date | None = None,
+        end_date: date | None = None,
+    ):
         raise NotImplementedError
 
     @abstractmethod
@@ -39,4 +46,8 @@ class MeetingRepository(ABC):
         file_size: int,
         user_id: int,
     ) -> Meeting | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def soft_delete(self, meeting_id: int, user_id: int) -> bool:
         raise NotImplementedError

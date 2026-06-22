@@ -1,4 +1,5 @@
 from app.DTO.LoginDTO import LoginDTO
+from app.DTO.GoogleLoginDTO import GoogleLoginDTO
 from app.DTO.RegisterDTO import RegisterDTO
 from app.DTO.ChatDTO import ChatCreateDTO, ChatMessageCreateDTO, ChatUpdateDTO
 from app.DTO.ChatMessageAttachmentDTO import ChatMessageAttachmentDTO
@@ -34,6 +35,7 @@ __all__ = [
     "FolderResponseDTO",
     "FolderUpdateDTO",
     "LoginDTO",
+    "GoogleLoginDTO",
     "MeetingCreateDTO",
     "MeetingResponseDTO",
     "MeetingUpdateDTO",

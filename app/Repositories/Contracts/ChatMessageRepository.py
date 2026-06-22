@@ -20,5 +20,9 @@ class ChatMessageRepository(BaseRepository, ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def speaker_counts_by_meeting(self, user_id: int, meeting_ids: list[int]) -> dict[int, int]:
+        raise NotImplementedError
+
+    @abstractmethod
     def find_by_id_for_chat(self, message_id: int, chat_id: int) -> ChatMessage | None:
         raise NotImplementedError

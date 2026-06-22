@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from app.DTO.LoginDTO import LoginDTO
+from app.DTO.GoogleLoginDTO import GoogleLoginDTO
 from app.DTO.RegisterDTO import RegisterDTO
 
 
@@ -12,6 +13,10 @@ class AuthService(ABC):
 
     @abstractmethod
     def login(self, dto: LoginDTO) -> dict[str, Any]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def google_login(self, dto: GoogleLoginDTO) -> dict[str, Any]:
         raise NotImplementedError
 
     @abstractmethod

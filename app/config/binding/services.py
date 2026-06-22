@@ -28,10 +28,13 @@ from app.Services.Contracts.MeetingTranscriptionService import MeetingTranscript
 from app.Services.MeetingTranscriptionServiceImpl import MeetingTranscriptionServiceImpl
 from app.Services.Contracts.SpeakerDiarizationService import SpeakerDiarizationService
 from app.Services.SpeakerDiarizationServiceImpl import SpeakerDiarizationServiceImpl
+from app.Services.Contracts.UserService import UserService
+from app.Services.UserServiceImpl import UserServiceImpl
 
 
 SERVICE_BINDINGS = {
     AuthService: lambda container: AuthServiceImpl(container.resolve(UserRepository)),
+    UserService: lambda container: UserServiceImpl(container.resolve(UserRepository)),
     ChatService: lambda container: ChatServiceImpl(
         container.resolve(ChatRepository),
         container.resolve(ChatMessageRepository),

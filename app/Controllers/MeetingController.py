@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 
 from app.Authentication.JWTAuthentication import AppJWTAuthentication
 from app.DTO.MeetingDTO import MeetingImportDTO, MeetingRecordStartDTO
+from app.DTO.meeting_dtos import MeetingListFilterDTO
 from app.Providers import container
 from app.Services.Contracts.MeetingService import MeetingService
 
@@ -23,7 +24,10 @@ class MeetingController(APIView):
                 {
                     "error": False,
                     "status": "OK",
-                    "data": service.list(user_id),
+                    "data": service.list(
+                        user_id,
+                        MeetingListFilterDTO.from_query_params(request.query_params),
+                    ),
                 },
                 status=status.HTTP_200_OK,
             )
@@ -55,6 +59,19 @@ class MeetingController(APIView):
                 "data": None,
             },
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def delete(self, request, id: int):
+        service = container.resolve(MeetingService)
+        service.delete(id, request.user.id)
+        return Response(
+            {
+                "error": False,
+                "status": "success",
+                "message": "Meeting deleted successfully",
+                "data": True,
+            },
+            status=status.HTTP_200_OK,
         )
 
     def import_meeting(self, request):
