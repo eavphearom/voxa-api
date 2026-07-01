@@ -1,7 +1,5 @@
 import logging
 
-from celery import app
-
 from app.Exceptions import ApplicationException
 from app.Services.Contracts.MeetingJobService import MeetingJobService
 
