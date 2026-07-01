@@ -1,8 +1,10 @@
 import logging
+import os
 
 from app.Exceptions import ApplicationException
 from app.Services.Contracts.MeetingJobService import MeetingJobService
-
+from app.Providers import container
+from app.Services.Contracts.MeetingProcessingService import MeetingProcessingService
 logger = logging.getLogger(__name__)
 
 
@@ -10,20 +12,26 @@ class MeetingJobServiceImpl(MeetingJobService):
 
     def enqueue(self, meeting_id: int, user_id: int) -> str:
         logger.error(" ENQUEUE CALLED")
-        from app.tasks import process_meeting_transcription
-        from core.celery import app
+        # from app.tasks import process_meeting_transcription
+        # from core.celery import app
         try:
-            logger.info("BEFORE DELAY")
-            print("BROKER =", app.conf.broker_url)
-            print("BACKEND =", app.conf.result_backend)
-            task = process_meeting_transcription.delay(meeting_id, user_id)
-
-            logger.info(f"TASK ID: {task.id}")
-
+            # logger.info("BEFORE DELAY")
+            # print("REDIS_URL ENV =", os.getenv("REDIS_URL"))
+            # print("BROKER =", app.conf.broker_url)
+            # print("BACKEND =", app.conf.result_backend)
+            
+            # task = process_meeting_transcription.delay(meeting_id, user_id)
+            
+            # logger.info(f"TASK ID: {task.id}")
+            container.resolve(MeetingProcessingService).process(
+                meeting_id,
+                user_id
+            )
         except Exception as exc:
             logger.exception(f"QUEUE ERROR: {exc}")
             raise ApplicationException(
                 "Unable to queue meeting transcription"
             ) from exc
 
-        return task.id
+        # return task.id
+        return "success"
