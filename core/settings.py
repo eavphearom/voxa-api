@@ -160,6 +160,9 @@ CELERY_RESULT_BACKEND = os.getenv(
     "REDIS_URL",
     "redis://127.0.0.1:6379/1"
 )
+print("REDIS_URL =", os.getenv("REDIS_URL"))
+print("CELERY_BROKER_URL =", CELERY_BROKER_URL)
+print("CELERY_RESULT_BACKEND =", CELERY_RESULT_BACKEND)
 # for local
 # CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://127.0.0.1:6379/0")
 # CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/1")
