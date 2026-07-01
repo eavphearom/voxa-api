@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 class MeetingJobServiceImpl(MeetingJobService):
 
     def enqueue(self, meeting_id: int, user_id: int) -> str:
+        logger.error("AAAAAAAAAAAA ENQUEUE CALLED")
         from app.tasks import process_meeting_transcription
 
         try:
